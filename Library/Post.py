@@ -8,8 +8,8 @@ class Post(object):
         return self._topics
 
     @topics.setter
-    def topics(self, topics: list):
-        self._topics = topics
+    def topics(self, topic: list):
+        self._topics.append(topic)
 
     @property
     def body(self):
