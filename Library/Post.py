@@ -1,7 +1,7 @@
 class Post(object):
-    def __init__(self):
-        self._topics = []
-        self._body = str()
+    def __init__(self,topics,body):
+        self._topics = topics
+        self._body = body
 
     @property
     def topics(self) -> list:
