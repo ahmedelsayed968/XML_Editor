@@ -20,10 +20,12 @@ class Node:
 
 
 class Tree:
+    Space ='\t\t'
     def __init__(self):
         self.root = None
 
-    def __check_tag(self, xmlTagsSt: [Node], end_tag_node: Node):
+
+    def __check_tag(self, xmlTagsSt: list[Node], end_tag_node: Node):
         temp_stack = []
         if xmlTagsSt:
             if xmlTagsSt[-1].tag_name == end_tag_node.tag_name:
@@ -60,15 +62,17 @@ class Tree:
             if top.is_open_tag:
                 top.hasValue = True
                 dataNode.is_valid = True
+                top.children.append(dataNode)
             else:
                 dataNode.is_valid = False
+                stackTags.append(dataNode)
+
         else:
             dataNode.is_valid = False
-        stackTags.append(dataNode)
+            stackTags.append(dataNode)
 
     def __get_atrribute_value(self, data: str):
         list_ = data.split('=')
-        list_[-1] = list_[-1][1:-1]
         return list_
 
     def parser(self, file_string: str):
@@ -169,27 +173,53 @@ class Tree:
 
 
 
+    def __printTree(self,root:Node, level=0):
+        sep = level * "\t"
+        if not root:
+            return
+        if root.is_open_tag:
+            print(f'{sep}<{root.tag_name}',end='')
+            if root.has_attribute:
+                print(f' {root.attribute_name}={root.attribute_value}>')
+            else:
+                print('>')
+            if root.hasValue and root.children:
+                another_sep = sep+'\t'
+                print(f'{another_sep}{root.children[0].value}')
+        elif root.is_close_tag:
+            print(f'{sep}</{root.tag_name}>')
+        elif root.self_close:
+            print(f'{sep}<{root.tag_name}/>')
+        elif root.comment:
+            print(f'{sep}<!{root.value}>')
+        for child in root.children:
+            self.__printTree(child, level + 1)
+        if root ==  self.root:
+            print(f'{sep}</{root.tag_name}>')
+
+    def visualizeXML(self):
+        self.__printTree(self.root)
 
 if __name__ == '__main__':
     file_string = """<users>
     <user/>
     <user atrr="ahmed">
-<!--hi        -->
+        <!--hi        -->
         <id>1</id>
         <name>ahmed</name>
+        <posts>
+            <post>
+                <topics>
+                    <topic>
+                        toxic
+                    </topic>
+                </topics>
+            </post>
+        </posts>
     </user>
     <easy/>
 </users>"""
     xmlTree = Tree()
     xmlTree.parser(file_string)
-    if xmlTree.root:
-        print(xmlTree.root.tag_name)
-        children = xmlTree.root.children
-        print(len(children))
-        print(children[0].tag_name)
-        print(children[1].tag_name)
-        # print(children[1].attribute_value)
-        print(children[2].tag_name)
-        print(children[3].tag_name)
+    xmlTree.visualizeXML()
 
-    # xmlTree.root
