@@ -198,6 +198,57 @@ class Tree:
         # if root == self.root:
         #     print(f'{sep}</{root.tag_name}>')
 
+
+#need to edit 
+    def __correctionTree(self, root: Node,perent):
+         if(not root.is_valid):  
+                if(root.is_tag):
+                    if(root.is_open_tag and root.hasValue):
+                          root.is_valid=True
+                          end_tag_node = Node()
+                          end_tag_node.tag_name = root.tag_name
+                          end_tag_node.is_tag = True
+                          end_tag_node.is_close_tag = True
+                          end_tag_node.is_valid=True
+                          index= perent.children.index(root)
+                          perent.children.insert(index+1,end_tag_node)
+
+                    elif(root.is_open_tag and not root.hasValue ):
+                          root.is_valid=True
+                          end_tag_node = Node()
+                          end_tag_node.tag_name = root.tag_name
+                          end_tag_node.is_tag = True
+                          end_tag_node.is_close_tag = True
+                          end_tag_node.is_valid=True
+                          queue = []
+                          index=perent.children.index(root)
+                          i=index+1
+                          while(i<len(perent.children)):
+
+                                queue.append(perent.children.pop(i))
+                                i=i+1
+
+                          while(queue):
+                            root.children.append(queue.pop(0))
+                          perent.children.append(end_tag_node)  
+                #elif(root.is_close_tag):
+                     #root.is_valid=True
+                     #open_tag_node = Node()
+                     #open_tag_node.tag_name = root.tag_name[0]+root.tag_name[1:]
+                     #open_tag_node.is_tag = True
+                     #open_tag_node.is_open_tag = True
+                     #open_tag_node.is_valid=True
+                     #open_tag_node.children.append(root)
+                     #root.children.remove(root)
+                     #root.children.append(open_tag_node)
+                for child in root.children:
+                              self.__correctionTree(child,root)
+    
+    def correter_XML(self):
+        for nodes in self.created_nodes:
+               self.__correctionTree(nodes,nodes)
+
+
     def visualizeXML(self):
         for nodes in self.created_nodes:
             self.__printTree(nodes)
@@ -279,4 +330,5 @@ if __name__ == '__main__':
   """
     xmlTree = Tree()
     xmlTree.parser(file_string)
+    xmlTree.correter_XML()
     xmlTree.visualizeXML()
