@@ -20,10 +20,11 @@ class Node:
 
 
 class Tree:
-    Space ='\t\t'
+    Space = '\t\t'
+
     def __init__(self):
         self.root = None
-
+        self.created_nodes = None
 
     def __check_tag(self, xmlTagsSt: list[Node], end_tag_node: Node):
         temp_stack = []
@@ -53,7 +54,7 @@ class Tree:
                     end_tag_node.is_valid = True
                     xmlTagsSt.append(end_tag_node)
         else:
-            end_tag_node.is_valid  = False
+            end_tag_node.is_valid = False
             xmlTagsSt.append(end_tag_node)
 
     def __data_node(self, stackTags: list[Node], dataNode: Node):
@@ -82,7 +83,7 @@ class Tree:
         while index < length_file_string:
             if file_string[index] == '<':
                 # then get the data between < and  >
-                index +=1
+                index += 1
                 data = str()
                 while index < length_file_string and file_string[index] != '>':
                     data += file_string[index]
@@ -109,8 +110,8 @@ class Tree:
                         xml_version.is_tag = True
                         xml_version.is_valid = True
                         xml_version.value = data[1:]
-                        if not self.root:
-                            self.root = xml_version
+                        # if not self.root:
+                        #     self.root = xml_version
                         xmlTagsSt.append(xml_version)
 
                     elif data[0] == '/':  # end tag
@@ -138,14 +139,14 @@ class Tree:
                         xmlTagsSt.append(self_closed_node)
                         # Note that we can't set the self_closed tag to be the root
 
-                    else:   # this is an open tag
+                    else:  # this is an open tag
                         open_tag = Node()
                         open_tag.is_tag = True
                         open_tag.is_open_tag = True
                         if '=' in data:
-                            tag_name,attr = data.split()
-                            attr_name,attr_value = self.__get_atrribute_value(attr)
-                            open_tag.tag_name = tag_name
+                            tag_name, attr = data.split()
+                            attr_name, attr_value = self.__get_atrribute_value(attr)
+                            open_tag.tag_name = tag_name.strip()
                             open_tag.has_attribute = True
                             open_tag.attribute_name = attr_name
                             open_tag.attribute_value = attr_value
@@ -168,23 +169,21 @@ class Tree:
                 value_node.is_tag = False
                 value_node.value = data
                 # value_node.hasValue = data
-                self.__data_node(xmlTagsSt,value_node)
+                self.__data_node(xmlTagsSt, value_node)
+        self.created_nodes = xmlTagsSt
 
-
-
-
-    def __printTree(self,root:Node, level=0):
+    def __printTree(self, root: Node, level=0):
         sep = level * "\t"
         if not root:
             return
         if root.is_open_tag:
-            print(f'{sep}<{root.tag_name}',end='')
+            print(f'{sep}<{root.tag_name}', end='')
             if root.has_attribute:
                 print(f' {root.attribute_name}={root.attribute_value}>')
             else:
                 print('>')
             if root.hasValue and root.children:
-                another_sep = sep+'\t'
+                another_sep = sep + '\t'
                 print(f'{another_sep}{root.children[0].value}')
         elif root.is_close_tag:
             print(f'{sep}</{root.tag_name}>')
@@ -192,34 +191,92 @@ class Tree:
             print(f'{sep}<{root.tag_name}/>')
         elif root.comment:
             print(f'{sep}<!{root.value}>')
+        elif root.xml_version:
+            print(f'{sep}<?{root.value}>')
         for child in root.children:
             self.__printTree(child, level + 1)
-        if root ==  self.root:
-            print(f'{sep}</{root.tag_name}>')
+        # if root == self.root:
+        #     print(f'{sep}</{root.tag_name}>')
 
     def visualizeXML(self):
-        self.__printTree(self.root)
+        for nodes in self.created_nodes:
+            self.__printTree(nodes)
+
 
 if __name__ == '__main__':
-    file_string = """<users>
-    <user/>
-    <user atrr="ahmed">
-        <!--hi        -->
-        <id>1</id>
-        <name>ahmed</name>
-        <posts>
+    file_string = """
+<?xml version="1.0" encoding="UTF-8"?>
+<users>
+<usr/><user/><!--    --><easy/><user ><id >1</id><name>Ahmed Ali
+</name><!--        --><d/>
+        <posts><post><body>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</body><topics><topic>economy</topic><topic>finance</topic></topics>
+            </post>
             <post>
+                <body>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                </body>
                 <topics>
                     <topic>
-                        toxic
+                        solar_energy
                     </topic>
                 </topics>
             </post>
         </posts>
+        <followers>
+            <follower>
+                <id>2</id>
+            </follower>
+            <follower>
+                <id>3</id>
+            </follower>
+        </followers>
     </user>
-    <easy/>
-</users>"""
+    <user>
+        <id>2</id>
+        <name>Yasser Ahmed</name>
+        <posts>
+            <post>
+                <body>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                </body>
+                <topics>
+                    <topic>
+                        education
+                    </topic>
+                </topics>
+            </post>
+        </posts>
+        <followers>
+            <follower>
+                <id>1</id>
+            </follower>
+        </followers>
+    </user>
+    <user>
+        <id>3</id>
+        <name>Mohamed Sherif</name>
+        <posts>
+            <post>
+                <body>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                </body>
+                <topics>
+                    <topic>
+                        sports
+                    </topic>
+                </topics>
+            </post>
+        </posts>
+        <followers>
+            <follower>
+                <id>1</id>
+            </follower>
+        </followers>
+    </user>
+
+    <?xml version="1.0" encoding="UTF-8"?>
+</users>
+  """
     xmlTree = Tree()
     xmlTree.parser(file_string)
     xmlTree.visualizeXML()
-
