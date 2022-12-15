@@ -197,7 +197,65 @@ class Tree:
             self.__printTree(child, level + 1)
         # if root == self.root:
         #     print(f'{sep}</{root.tag_name}>')
-
+    def __printJSON(self, root: Node, level=0, temp:list =[],temp1:list =[]):
+        sep = level * "\t"
+        flag_list_close=False
+        flag_set_close=False
+        if not root:
+            return
+        if(len(root.children)==0):
+            if(len(temp)==1 and root.tag_name==temp[0] ):
+                temp.pop()
+                print(sep+" ]")
+                print("}") 
+            else:
+                for tags in temp:
+                    if(root.tag_name==tags):
+                        temp.pop()
+                        flag_list_close=True     
+                if(flag_list_close):
+                    print(sep+" ]")
+                    flag_list_close=False 
+                for tags in temp1:
+                    if(root.tag_name==tags):
+                        temp1.pop()
+                        flag_set_close=True
+                if(flag_set_close):
+                    print(sep+" }")
+                    flag_set_close=False     
+        elif(len(root.children)==1 ):
+            if(root.children[0].value!=None):
+                print(sep+"\""+root.tag_name+"\":\""+root.children[0].value+"\",")
+        elif(len(root.children)>2):
+            if(level==0):
+                print("{\""+root.tag_name+"\"[")
+                temp.append(root.tag_name)
+            elif(root.children[0].tag_name!=root.children[2].tag_name):
+                print(sep+"\""+root.tag_name,end=" ")
+                if root.has_attribute:
+                    print(f'{root.attribute_name}={root.attribute_value}')
+                else:
+                    print("\":{")
+                temp1.append(root.tag_name)
+            else:   
+                if root.is_open_tag:
+                    print(sep+"\""+root.tag_name,end=" ")
+                    if root.has_attribute:
+                        print(f'{root.attribute_name}={root.attribute_value}')
+                    else:
+                        print("\":[")
+                        temp.append(root.tag_name)
+                    if root.hasValue and root.children:
+                        another_sep = sep + '\t'
+                        print(f'{another_sep}{root.children[0].value}')
+        elif root.self_close:
+                print(sep+"\""+root.tag_name+"\"")
+        elif root.comment:
+                pass
+        elif root.xml_version:
+                pass
+        for child in root.children:
+            self.__printTree(child, level + 1,temp)
     # need to edit
     def __correctionTree(self, root: Node, parent: Node):
         if not root.is_valid:
@@ -269,6 +327,9 @@ class Tree:
     def visualizeXML(self):
         for nodes in self.created_nodes:
             self.__printTree(nodes)
+    def visualizeJSON(self):
+        for nodes in self.created_nodes:
+            self.__printJSON(nodes)
 
 
 if __name__ == '__main__':
