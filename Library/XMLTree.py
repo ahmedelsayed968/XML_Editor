@@ -23,8 +23,8 @@ class Tree:
     Space = '\t\t'
 
     def __init__(self):
-        self.root = None
-        self.created_nodes = None
+        self.root = None            # point to the root of the xml file
+        self.created_nodes = None   # contains the remaining tags after parsing
 
     def __check_tag(self, xmlTagsSt: list[Node], end_tag_node: Node):
         temp_stack = []
@@ -198,56 +198,73 @@ class Tree:
         # if root == self.root:
         #     print(f'{sep}</{root.tag_name}>')
 
+    # need to edit
+    def __correctionTree(self, root: Node, parent: Node):
+        if not root.is_valid:
+            if root.is_tag:
+                if root.is_open_tag and root.hasValue:
+                    root.is_valid = True
+                    end_tag_node = Node()
+                    end_tag_node.tag_name = root.tag_name
+                    end_tag_node.is_tag = True
+                    end_tag_node.is_close_tag = True
+                    end_tag_node.is_valid = True
+                    index = parent.children.index(root)
+                    parent.children.insert(index + 1, end_tag_node)
 
-#need to edit 
-    def __correctionTree(self, root: Node,perent):
-         if(not root.is_valid):  
-                if(root.is_tag):
-                    if(root.is_open_tag and root.hasValue):
-                          root.is_valid=True
-                          end_tag_node = Node()
-                          end_tag_node.tag_name = root.tag_name
-                          end_tag_node.is_tag = True
-                          end_tag_node.is_close_tag = True
-                          end_tag_node.is_valid=True
-                          index= perent.children.index(root)
-                          perent.children.insert(index+1,end_tag_node)
+                elif root.is_open_tag and not root.hasValue:
+                    root.is_valid = True
+                    end_tag_node = Node()
+                    end_tag_node.tag_name = root.tag_name
+                    end_tag_node.is_tag = True
+                    end_tag_node.is_close_tag = True
+                    end_tag_node.is_valid = True
+                    queue = []
+                    index = parent.children.index(root)
+                    i = index + 1
 
-                    elif(root.is_open_tag and not root.hasValue ):
-                          root.is_valid=True
-                          end_tag_node = Node()
-                          end_tag_node.tag_name = root.tag_name
-                          end_tag_node.is_tag = True
-                          end_tag_node.is_close_tag = True
-                          end_tag_node.is_valid=True
-                          queue = []
-                          index=perent.children.index(root)
-                          i=index+1
-                          while(i<len(perent.children)):
+                    while i < len(parent.children):
+                        current = parent.children[i]
+                        queue.append(current)
+                        i = i + 1
 
-                                queue.append(perent.children.pop(i))
-                                i=i+1
+                    parent.children = parent.children[0:index + 1]
 
-                          while(queue):
-                            root.children.append(queue.pop(0))
-                          perent.children.append(end_tag_node)  
-                #elif(root.is_close_tag):
-                     #root.is_valid=True
-                     #open_tag_node = Node()
-                     #open_tag_node.tag_name = root.tag_name[0]+root.tag_name[1:]
-                     #open_tag_node.is_tag = True
-                     #open_tag_node.is_open_tag = True
-                     #open_tag_node.is_valid=True
-                     #open_tag_node.children.append(root)
-                     #root.children.remove(root)
-                     #root.children.append(open_tag_node)
-                for child in root.children:
-                              self.__correctionTree(child,root)
-    
+                    while (queue):
+                        root.children.append(queue.pop(0))
+                    parent.children.append(end_tag_node)
+
+                # TODO Uncomment this
+                # should be correct in case of close tags!
+                # elif root.is_close_tag:
+                #     root.is_valid = True
+                #     open_tag_node = Node()
+                #     open_tag_node.tag_name = root.tag_name
+                #     open_tag_node.is_tag = True
+                #     open_tag_node.is_open_tag = True
+                #     open_tag_node.is_valid = True
+                #     index_end = perent.children.index(root)
+                #     perent.children.insert(index_end, open_tag_node)
+
+                # TODO add condition for the data tag!
+
+        for child in root.children:
+            self.__correctionTree(child, root)
+
+    # def def_validation(self,node):
+
     def correter_XML(self):
-        for nodes in self.created_nodes:
-               self.__correctionTree(nodes,nodes)
+        for node in self.created_nodes:
+            if node is self.root:
+                if not node.is_valid:
+                    # correct the root node before going to its children
+                    end_tag_root = Node()
+                    end_tag_root.tag_name = self.root.tag_name
+                    end_tag_root.is_close_tag = True
+                    self.__check_tag(self.created_nodes, end_tag_root)
 
+                for child in node.children:
+                    self.__correctionTree(child, node)
 
     def visualizeXML(self):
         for nodes in self.created_nodes:
@@ -256,10 +273,9 @@ class Tree:
 
 if __name__ == '__main__':
     file_string = """
-<?xml version="1.0" encoding="UTF-8"?>
 <users>
-<usr/><user/><!--    --><easy/><user ><id >1</id><name>Ahmed Ali
-</name><!--        --><d/>
+<usr/><user/><!--    --><easy/><user ><id >1<name>Ahmed Ali
+</name>
         <posts><post><body>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</body><topics><topic>economy</topic><topic>finance</topic></topics>
             </post>
             <post>
@@ -276,10 +292,10 @@ if __name__ == '__main__':
         <followers>
             <follower>
                 <id>2</id>
-            </follower>
+            
             <follower>
                 <id>3</id>
-            </follower>
+           
         </followers>
     </user>
     <user>
@@ -318,17 +334,16 @@ if __name__ == '__main__':
                 </topics>
             </post>
         </posts>
-        <followers>
+        
             <follower>
-                <id>1</id>
-            </follower>
+                <id>1</a>
+            
         </followers>
-    </user>
 
-    <?xml version="1.0" encoding="UTF-8"?>
-</users>
+
   """
     xmlTree = Tree()
     xmlTree.parser(file_string)
     xmlTree.correter_XML()
     xmlTree.visualizeXML()
+    print(len(xmlTree.created_nodes))
