@@ -255,7 +255,7 @@ class Tree:
         elif root.xml_version:
                 pass
         for child in root.children:
-            self.__printTree(child, level + 1,temp)
+            self.__printJSON(child, level + 1,temp)
     # need to edit
     def __correctionTree(self, root: Node, parent: Node):
         if not root.is_valid:
