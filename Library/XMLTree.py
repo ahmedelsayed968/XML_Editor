@@ -292,17 +292,26 @@ class Tree:
                         root.children.append(queue.pop(0))
                     parent.children.append(end_tag_node)
 
+
                 # TODO Uncomment this
                 # should be correct in case of close tags!
-                # elif root.is_close_tag:
-                #     root.is_valid = True
-                #     open_tag_node = Node()
-                #     open_tag_node.tag_name = root.tag_name
-                #     open_tag_node.is_tag = True
-                #     open_tag_node.is_open_tag = True
-                #     open_tag_node.is_valid = True
-                #     index_end = perent.children.index(root)
-                #     perent.children.insert(index_end, open_tag_node)
+                
+                elif root.is_close_tag:
+                     root.is_valid = True
+                     open_tag_node = Node()
+                     open_tag_node.tag_name = root.tag_name
+                     open_tag_node.is_tag = True
+                     open_tag_node.is_open_tag = True
+                     open_tag_node.hasValue=True
+                     open_tag_node.is_valid = True
+                     index_end = parent.children.index(root)    
+                     if(not parent.children[index_end-1].is_tag):  
+                            parent.children[index_end-1].is_valid=True
+                            open_tag_node.children.append(parent.children.pop(index_end-1))
+                            parent.children.insert(index_end-1, open_tag_node)
+                    #to_do handle case open tag missing without data
+                     #else:
+                       
 
                 # TODO add condition for the data tag!
 
@@ -334,13 +343,14 @@ class Tree:
 
 if __name__ == '__main__':
     file_string = """
+
 <users>
-<usr/><user/><!--    --><easy/><user ><id >1<name>Ahmed Ali
+<user/><user/><!--    --><easy/><user ><id >1<name>Ahmed Ali
 </name>
         <posts><post><body>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</body><topics><topic>economy</topic><topic>finance</topic></topics>
             </post>
             <post>
-                <body>
+                
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
                 </body>
                 <topics>
@@ -407,4 +417,4 @@ if __name__ == '__main__':
     xmlTree.parser(file_string)
     xmlTree.correter_XML()
     xmlTree.visualizeXML()
-    print(len(xmlTree.created_nodes))
+    
