@@ -236,25 +236,23 @@ class Tree:
                 print("{\""+root.tag_name+"\"[")
                 temp.append(root.tag_name)
             elif(root.children[0].tag_name!=root.children[2].tag_name):
-                    print(sep+"\""+root.tag_name +"\":\"",end=" ")
+                    print(sep+"\""+root.tag_name +"\":",end=" ")
                     if root.has_attribute:
                         print("{\""+root.attribute_name+"\":"+root.attribute_value+"}{")
                     else:
-                        print(root.children[0].value+"\",")
-                        print("\":{")
+                        print(root.children[0].value,end=" ")
+                        print("{")
                     temp1.append(root.tag_name)
             else:   
                 if root.is_open_tag:
-                    print(sep+"\""+root.tag_name +"\":\"",end=" ")
+                    print(sep+"\""+root.tag_name +"\":",end=" ")
                     if root.has_attribute:
                         print("{\""+root.attribute_name+"\":"+root.attribute_value+"}{")
                     else:
-                        print(root.children[0].value+"\",")
-                        print("\":[")
+                        print(root.children[0].value,end='')
+                        print("[")
                         temp.append(root.tag_name)
-                    if root.hasValue and root.children:
-                        another_sep = sep + '\t'
-                        print(f'{another_sep}{root.children[0].value}')
+
         elif root.self_close:
                 print(sep+"\""+root.tag_name+"\"")
         elif root.comment:
@@ -262,7 +260,7 @@ class Tree:
         elif root.xml_version:
                 pass
         for child in root.children:
-            self.__printJSON(child, level + 1,temp)
+            self.__printJSON(child, level + 1,temp,temp1)
     # need to edit
     def __correctionTree(self, root: Node, parent: Node):
         if not root.is_valid:
