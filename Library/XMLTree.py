@@ -335,7 +335,7 @@ class Tree:
                         while (queue):
                             open_tag_node.children.append(queue.pop(0))
                         index_end=parent.children.index(root)  
-                        parent.children.insert(index_end,open_tag_node)
+                        parent.children.insert(index_end-1,open_tag_node)
 
 
         for child in root.children:
