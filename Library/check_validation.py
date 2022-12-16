@@ -24,7 +24,10 @@ def valid( s):
                               if(len(stack)==0):
                                     return False
                               else:
-                                    stack.pop()
+                                  temp= stack.pop()
+                                  if(not tag[1:] in temp):
+                                    return False
+
                         else:
                               stack.append(tag)
       if( not len(stack)==0):
@@ -33,5 +36,5 @@ def valid( s):
                         
 
 #try using minified string
-s = "<?xml version=1.0 encoding=UTF-8 ?><users><user><id>1</id><name>Ahmed Ali</name><easy\><posts><post><body>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</body></post></posts><followers><follower><id>2</id></follower></followers></user></users>"
+s = "<?xml version=1.0 encoding=UTF-8 ?><users><user><id atrr=5></id><name>Ahmed Ali</name><easy\><posts><post><body>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</body></post></posts><followers><follower><id>2</id></follower></followers></user></users>"
 print(valid(s))
