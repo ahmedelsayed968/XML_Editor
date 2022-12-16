@@ -297,25 +297,61 @@ class Tree:
                         root.children.append(queue.pop(0))
                     parent.children.append(end_tag_node)
 
-                # TODO Uncomment this
                 # should be correct in case of close tags!
-                # elif root.is_close_tag:
-                #     root.is_valid = True
-                #     open_tag_node = Node()
-                #     open_tag_node.tag_name = root.tag_name
-                #     open_tag_node.is_tag = True
-                #     open_tag_node.is_open_tag = True
-                #     open_tag_node.is_valid = True
-                #     index_end = perent.children.index(root)
-                #     perent.children.insert(index_end, open_tag_node)
+                
+                elif root.is_close_tag:
+                     root.is_valid = True
+                     open_tag_node = Node()
+                     open_tag_node.tag_name = root.tag_name
+                     open_tag_node.is_tag = True
+                     open_tag_node.is_open_tag = True
+                     open_tag_node.is_valid = True
+                     index_end = parent.children.index(root)    
+                     if(not parent.children[index_end-1].is_tag):
+                            open_tag_node.hasValue=True  
+                            parent.children[index_end-1].is_valid=True
+                            open_tag_node.children.append(parent.children.pop(index_end-1))
+                            parent.children.insert(index_end-1, open_tag_node)
+                    #to_do handle case open tag missing without data
+                     else:
+                        open_tag_node.hasValue= False
+                        queue = []
+                        i =0
+                        if(open_tag_node.tag_name[-1]=='s'):
+                            while i <index_end:
+                                if(parent.children[i].is_tag):
+                                    if open_tag_node.tag_name[0:len(open_tag_node.value) - 1] in parent.children[i].tag_name:
+                                        current = parent.children.pop(i)
+                                        i-=1
+                                        index_end-=1
+                                        queue.append(current)
+                                i = i + 1
+                        else:
+                                print("hi")
+                                while i <index_end:
+                                    current = parent.children.pop(0)
+                                    queue.append(current)
+                                    i = i + 1
+                        while (queue):
+                            open_tag_node.children.append(queue.pop(0))
+                        index_end=parent.children.index(root)  
+                        parent.children.insert(index_end,open_tag_node)
 
-                # TODO add condition for the data tag!
 
         for child in root.children:
             self.__correctionTree(child, root)
 
     # def def_validation(self,node):
 
+
+    def __delete_data(self, root: Node, parent: Node):
+        if not root.is_tag:
+                        if not root.is_valid :
+                            index=parent.children.index(root)
+                            parent.children.pop(index)
+        for child in root.children:
+            self.__delete_data(child, root)
+                    
     def correter_XML(self):
         for node in self.created_nodes:
             if node is self.root:
@@ -328,6 +364,8 @@ class Tree:
 
                 for child in node.children:
                     self.__correctionTree(child, node)
+                for child in node.children:
+                    self.__delete_data(child, node)
 
     def visualizeXML(self):
         for nodes in self.created_nodes:
@@ -339,127 +377,38 @@ class Tree:
 
 if __name__ == '__main__':
     file_string = """
-<?xml version="1.0"?>
-<catalog>
-   <book id="bk101">
-      <author>Gambardella, Matthew</author>
-      <title>XML Developer's Guide</title>
-      <genre>Computer</genre>
-      <price>44.95</price>
-      <publish_date>2000-10-01</publish_date>
-      <description>An in-depth look at creating applications 
-      with XML.</description>
-   </book>
-   <book id="bk102">
-      <author>Ralls, Kim</author>
-      <title>Midnight Rain</title>
-      <genre>Fantasy</genre>
-      <price>5.95</price>
-      <publish_date>2000-12-16</publish_date>
-      <description>A former architect battles corporate zombies, 
-      an evil sorceress, and her own childhood to become queen 
-      of the world.</description>
-   </book>
-   <book id="bk103">
-      <author>Corets, Eva</author>
-      <title>Maeve Ascendant</title>
-      <genre>Fantasy</genre>
-      <price>5.95</price>
-      <publish_date>2000-11-17</publish_date>
-      <description>After the collapse of a nanotechnology 
-      society in England, the young survivors lay the 
-      foundation for a new society.</description>
-   </book>
-   <book id="bk104">
-      <author>Corets, Eva</author>
-      <title>Oberon's Legacy</title>
-      <genre>Fantasy</genre>
-      <price>5.95</price>
-      <publish_date>2001-03-10</publish_date>
-      <description>In post-apocalypse England, the mysterious 
-      agent known only as Oberon helps to create a new life 
-      for the inhabitants of London. Sequel to Maeve 
-      Ascendant.</description>
-   </book>
-   <book id="bk105">
-      <author>Corets, Eva</author>
-      <title>The Sundered Grail</title>
-      <genre>Fantasy</genre>
-      <price>5.95</price>
-      <publish_date>2001-09-10</publish_date>
-      <description>The two daughters of Maeve, half-sisters, 
-      battle one another for control of England. Sequel to 
-      Oberon's Legacy.</description>
-   </book>
-   <book id="bk106">
-      <author>Randall, Cynthia</author>
-      <title>Lover Birds</title>
-      <genre>Romance</genre>
-      <price>4.95</price>
-      <publish_date>2000-09-02</publish_date>
-      <description>When Carla meets Paul at an ornithology 
-      conference, tempers fly as feathers get ruffled.</description>
-   </book>
-   <book id="bk107">
-      <author>Thurman, Paula</author>
-      <title>Splish Splash</title>
-      <genre>Romance</genre>
-      <price>4.95</price>
-      <publish_date>2000-11-02</publish_date>
-      <description>A deep sea diver finds true love twenty 
-      thousand leagues beneath the sea.</description>
-   </book>
-   <book id="bk108">
-      <author>Knorr, Stefan</author>
-      <title>Creepy Crawlies</title>
-      <genre>Horror</genre>
-      <price>4.95</price>
-      <publish_date>2000-12-06</publish_date>
-      <description>An anthology of horror stories about roaches,
-      centipedes, scorpions  and other insects.</description>
-   </book>
-   <book id="bk109">
-      <author>Kress, Peter</author>
-      <title>Paradox Lost</title>
-      <genre>Science Fiction</genre>
-      <price>6.95</price>
-      <publish_date>2000-11-02</publish_date>
-      <description>After an inadvertant trip through a Heisenberg
-      Uncertainty Device, James Salway discovers the problems 
-      of being quantum.</description>
-   </book>
-   <book id="bk110">
-      <author>O'Brien, Tim</author>
-      <title>Microsoft .NET: The Programming Bible</title>
-      <genre>Computer</genre>
-      <price>36.95</price>
-      <publish_date>2000-12-09</publish_date>
-      <description>Microsoft's .NET initiative is explored in 
-      detail in this deep programmer's reference.</description>
-   </book>
-   <book id="bk111">
-      <author>O'Brien, Tim</author>
-      <title>MSXML3: A Comprehensive Guide</title>
-      <genre>Computer</genre>
-      <price>36.95</price>
-      <publish_date>2000-12-01</publish_date>
-      <description>The Microsoft MSXML3 parser is covered in 
-      detail, with attention to XML DOM interfaces, XSLT processing, 
-      SAX and more.</description>
-   </book>
-   <book id="bk112">
-      <author>Galos, Mike</author>
-      <title>Visual Studio 7: A Comprehensive Guide</title>
-      <genre>Computer</genre>
-      <price>49.95</price>
-      <publish_date>2001-04-16</publish_date>
-      <description>Microsoft Visual Studio 7 is explored in depth,
-      looking at how Visual Basic, Visual C++, C#, and ASP+ are 
-      integrated into a comprehensive development 
-      environment.</description>
-   </book>
-</catalog>
+<?xml version="1.0" encoding="UTF-8" ?>
+<users>
+
+<id>1</id>
+		rana
+       <posts>
+			<post>
+				<body>
+					ffgg
+				</body>
+				<topics>
+					<topic>
+						topic
+					</topic>
+				</topics>
+			</post>
+			<post>
+				<body>
+					ffgg
+				</body>
+				<topics>
+					<topic>
+						welcome
+					
+				
+			</post>
+		</posts>	
+    </user>
+</users>
   """
     xmlTree = Tree()
     xmlTree.parser(file_string)
-    xmlTree.visualizeJSON()
+    #xmlTree.visualizeJSON()
+    xmlTree.correter_XML()
+    xmlTree.visualizeXML()
