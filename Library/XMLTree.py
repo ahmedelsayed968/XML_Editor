@@ -1,4 +1,11 @@
-from inspect import stack
+import enum
+
+
+class Status(enum.Enum):
+    initial_status = 0
+    prettifying = 1
+    minifying = 2
+    correction = 3
 
 
 class Node:
@@ -25,8 +32,9 @@ class Tree:
     def __init__(self):
         self.root = None  # point to the root of the xml file
         self.created_nodes = None  # contains the remaining tags after parsing
-        self.file_state_xml = None  # TODO should be updated while the user keep editing the file!
-        self.json_file = None  # TODO store the the json file to be saved in created file!
+        self.file_state_xml = None  # should be updated while the user keep editing the file!
+        self.json_file = None  # TODO store the the json file that was created after conversion! @Sara
+        self.passed_file = None
 
     def __check_tag(self, xmlTagsSt: list[Node], end_tag_node: Node):
         temp_stack = []
@@ -80,6 +88,7 @@ class Tree:
         return list_
 
     def parser(self, file_string: str):
+        self.passed_file = file_string
         length_file_string = len(file_string)
         index = 0
         xmlTagsSt = []
@@ -189,6 +198,7 @@ class Tree:
                 value_node.value = data
                 self.__data_node(xmlTagsSt, value_node)
         self.created_nodes = xmlTagsSt
+        self.update_file_state(Status.initial_status)
 
     def __printTree(self, root: Node, level=0):
         sep = level * "\t"
@@ -346,7 +356,6 @@ class Tree:
                                         queue.append(current)
                                 i = i + 1
                         else:
-                            print("hi")
                             while i < index_end:
                                 current = parent.children.pop(0)
                                 queue.append(current)
@@ -358,8 +367,6 @@ class Tree:
 
         for child in root.children:
             self.__correctionTree(child, root)
-
-    # def def_validation(self,node):
 
     def __delete_data(self, root: Node, parent: Node):
         if not root.is_tag:
@@ -393,6 +400,8 @@ class Tree:
         for node in nodes_to_remove:
             self.created_nodes.remove(node)
 
+        self.update_file_state(Status.correction)  # update the file
+
     def visualizeXML(self):
         for nodes in self.created_nodes:
             self.__printTree(nodes)
@@ -401,41 +410,307 @@ class Tree:
         for nodes in self.created_nodes:
             self.__printJSON(nodes)
 
+    def __edit_prettifying(self, root: Node, level=0):
+        sep = level * "\t"
+        new_line = ""
+        if not root:
+            return
+        if root.is_open_tag:
+            new_line = f'{sep}<{root.tag_name}'
+            if root.has_attribute:
+                new_line += f' {root.attribute_name}={root.attribute_value}>\n'
+            else:
+                new_line += '>\n'
+            if root.hasValue and root.children:
+                another_sep = sep + '\t'
+                new_line += f'{another_sep}{root.children[0].value}' + '\n'
+        elif root.is_close_tag:
+            new_line = f'{sep}</{root.tag_name}>\n'
+        elif root.self_close:
+            new_line = f'{sep}<{root.tag_name}/>\n'
+        elif root.comment:
+            new_line = f'{sep}<!{root.value}>\n'
+        elif root.xml_version:
+            new_line = f'{sep}<?{root.value}>\n'
+        self.file_state_xml += new_line
+        for child in root.children:
+            self.__edit_prettifying(child, level + 1)
+
+    def __prettifying(self):
+        self.file_state_xml = ""
+        for node in self.created_nodes:
+            self.__edit_prettifying(node)
+
+    def __edit_minifying(self, root: Node):
+        new_line = ""
+        if not root:
+            return
+        if root.is_open_tag:
+            new_line += f'<{root.tag_name}'
+            if root.has_attribute:
+                new_line += f' {root.attribute_name}={root.attribute_value}>'
+            else:
+                new_line += '>'
+            if root.hasValue and root.children:
+                new_line += f'{root.children[0].value}'
+        elif root.is_close_tag:
+            new_line = f'</{root.tag_name}>'
+        elif root.self_close:
+            new_line = f'<{root.tag_name}/>'
+        elif root.comment:
+            new_line = f'<!{root.value}>'
+        elif root.xml_version:
+            new_line = f'<?{root.value}>'
+        if self.file_state_xml:
+            if len(self.file_state_xml) % 30 == 0:
+                self.file_state_xml += '\n'
+        self.file_state_xml += new_line
+        for child in root.children:
+            self.__edit_minifying(child)
+
+    def __minifying(self):
+        self.file_state_xml = ""
+        for node in self.created_nodes:
+            self.__edit_minifying(node)
+
+    # update the file after every change occurred!
+    # changes such as -> prettifying , minifying , correction, initial_state
+    def update_file_state(self, status: Status):
+        if status == Status.prettifying:
+            self.__prettifying()
+        elif status == Status.minifying:
+            self.__minifying()
+        elif status == Status.correction:
+            # after correction, we should show the formatted version!
+            self.__prettifying()
+        elif status == Status.initial_status:
+            self.file_state_xml = self.passed_file
+
 
 if __name__ == '__main__':
     file_string = """
-<?xml version="1.0" encoding="UTF-8" ?>
-<users>
-
-<id>1</id>
-		rana
-       <posts>
-			<post>
-				<body>
-					ffgg
-				</body>
-				<topics>
-					<topic>
-						topic
-					</topic>
-				</topics>
-			</post>
-			<post>
-				<body>
-					ffgg
-				</body>
-				
-						welcome
-					</topic>
+<?xml version="1.0"?>
+<catalog>
+   <book id="bk101">
+      <author>Gambardella, Matthew</author>
+      <title>XML Developer's Guide</title>
+      <genre>Computer</genre>
+      <price>44.95</price>
+      <publish_date>2000-10-01</publish_date>
+      <description>An in-depth look at creating applications 
+      with XML.</description>
+   </book>
+   <book id="bk102">
+      <author>Ralls, Kim</author>
+      <title>Midnight Rain</title>
+      <genre>Fantasy</genre>
+      <price>5.95</price>
+      <publish_date>2000-12-16</publish_date>
+      <description>A former architect battles corporate zombies, 
+      an evil sorceress, and her own childhood to become queen 
+      of the world.</description>
+   </book>
+   <book id="bk103">
+      <author>Corets, Eva</author>
+      <title>Maeve Ascendant</title>
+      <genre>Fantasy</genre>
+      <price>5.95</price>
+      <publish_date>2000-11-17</publish_date>
+      <description>After the collapse of a nanotechnology 
+      society in England, the young survivors lay the 
+      foundation for a new society.</description>
+   </book>
+   <book id="bk104">
+      <author>Corets, Eva</author>
+      <title>Oberon's Legacy</title>
+      <genre>Fantasy</genre>
+      <price>5.95</price>
+      <publish_date>2001-03-10</publish_date>
+      <description>In post-apocalypse England, the mysterious 
+      agent known only as Oberon helps to create a new life 
+      for the inhabitants of London. Sequel to Maeve 
+      Ascendant.</description>
+   </book>
+   <book id="bk105">
+      <author>Corets, Eva</author>
+      <title>The Sundered Grail</title>
+      <genre>Fantasy</genre>
+      <price>5.95</price>
+      <publish_date>2001-09-10</publish_date>
+      <description>The two daughters of Maeve, half-sisters, 
+      battle one another for control of England. Sequel to 
+      Oberon's Legacy.</description>
+   </book>
+   <book id="bk106">
+      <author>Randall, Cynthia</author>
+      <title>Lover Birds</title>
+      <genre>Romance</genre>
+      <price>4.95</price>
+      <publish_date>2000-09-02</publish_date>
+      <description>When Carla meets Paul at an ornithology 
+      conference, tempers fly as feathers get ruffled.</description>
+   </book>
+   <book id="bk107">
+      <author>Thurman, Paula</author>
+      <title>Splish Splash</title>
+      <genre>Romance</genre>
+      <price>4.95</price>
+      <publish_date>2000-11-02</publish_date>
+      <description>A deep sea diver finds true love twenty 
+      thousand leagues beneath the sea.</description>
+   </book>
+   <book id="bk108">
+      <author>Knorr, Stefan</author>
+      <title>Creepy Crawlies</title>
+      <genre>Horror</genre>
+      <price>4.95</price>
+      <publish_date>2000-12-06</publish_date>
+      <description>An anthology of horror stories about roaches,
+      centipedes, scorpions  and other insects.</description>
+      <posts>
+            <post>
+                <body>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                </body>
+                <topics>
+                    <topic>
+                        sports
+                    </topic>
                 </topics>
-				
-			</post>
-		</posts>	
-    </user>
-</users>
+            </post>
+        </posts>
+   </book>
+   <book id="bk109">
+      <author>Kress, Peter</author>
+      <title>Paradox Lost</title>
+      <genre>Science Fiction</genre>
+      <price>6.95</price>
+      <publish_date>2000-11-02</publish_date>
+      <description>After an inadvertant trip through a Heisenberg
+      Uncertainty Device, James Salway discovers the problems 
+      of being quantum.</description>
+   </book>
+   <book id="bk110">
+      <author>O'Brien, Tim</author>
+      <title>Microsoft .NET: The Programming Bible</title>
+      <genre>Computer</genre>
+      <price>36.95</price>
+      <publish_date>2000-12-09</publish_date>
+      <description>Microsoft's .NET initiative is explored in 
+      detail in this deep programmer's reference.</description>
+   </book>
+   <book id="bk111">
+      <author>O'Brien, Tim</author>
+      <title>MSXML3: A Comprehensive Guide</title>
+      <genre>Computer</genre>
+      <price>36.95</price>
+      <publish_date>2000-12-01</publish_date>
+      <description>The Microsoft MSXML3 parser is covered in 
+      detail, with attention to XML DOM interfaces, XSLT processing, 
+      SAX and more.</description>
+   </book>
+   <book id="bk112">
+      <author>Galos, Mike</author>
+      <title>Visual Studio 7: A Comprehensive Guide</title>
+      <genre>Computer</genre>
+      <price>49.95</price>
+      <publish_date>2001-04-16</publish_date>
+      <description>Microsoft Visual Studio 7 is explored in depth,
+      looking at how Visual Basic, Visual C++, C#, and ASP+ are 
+      integrated into a comprehensive development 
+      environment.</description>
+   </book>
+</catalog>
   """
+    test = """<users>
+       <!--    -->
+        <user atrr="ahmed">
+            <id>1</id>
+            <name>Ahmed Ali</name>
+            <posts>
+                <post>
+                    <body>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    </body>
+                    <topics>
+                        <topic>
+                            economy
+                        </topic>
+                        <topic>
+                            finance
+                        </topic>
+                    </topics>
+                </post>
+                <post>
+                    <body>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    </body>
+                    <topics>
+                        <topic>
+                            solar_energy
+                        </topic>
+                    </topics>
+                </post>
+            </posts>
+            <followers>
+                <follower>
+                    <id>2</id>
+                </follower>
+                <follower>
+                    <id>3</id>
+                </follower>
+            </followers>
+        </user>
+        <user>
+            <id>2</id>
+            <name>Yasser Ahmed</name>
+            <posts>
+                <post>
+                    <body>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    </body>
+                    <topics>
+                        <topic>
+                            education
+                        </topic>
+                    </topics>
+                </post>
+            </posts>
+            <followers>
+                <follower>
+                    <id>1</id>
+                </follower>
+            </followers>
+        </user>
+        <user>
+            <id>3</id>
+            <name>Mohamed Sherif</name>
+            <posts>
+                <post>
+                    <body>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    </body>
+                    <topics>
+                        <topic>
+                            sports
+                        </topic>
+                    </topics>
+                </post>
+            </posts>
+            <followers>
+                <follower>
+                    <id>1</id>
+                </follower>
+            </followers>
+        </user>
+
+
+    </users>"""
     xmlTree = Tree()
     xmlTree.parser(file_string)
+
     # xmlTree.visualizeJSON()
-    xmlTree.correter_XML()
-    xmlTree.visualizeXML()
+    # xmlTree.correter_XML()
+    # xmlTree.visualizeXML()
+    xmlTree.update_file_state(Status.prettifying)
+    print(xmlTree.file_state_xml)
