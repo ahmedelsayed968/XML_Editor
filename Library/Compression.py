@@ -2,11 +2,17 @@
 import heapq
 import os
 
+def minify(data):
+    
+    data=data.replace("    ",'')
+    data=data.replace('\t','')
+    data=data.replace('\n','')
+    return data
 
 
 class HuffmanCode:
-	def __init__(self, path):
-		self.path = path
+	def __init__(self,data:str):
+		self.data = minify(data)
 		self.heap = []
 		self.codes = {} 
 		self.reversecode = {}
@@ -102,8 +108,26 @@ class HuffmanCode:
 
 	"""-------------Compression---------------"""
 	def compress(self):
-     #to be added later
-		pass
+		 data = self.data
+		data = data.rstrip()
+		frequency = self.__freq_dict_builder(data)
+		self.__heap_builder(frequency)
+		self.__binary_tree_builder()
+		self.__codes_generator()
+
+		encoded_text = self.__encoded_text_builder(data)
+		padded_encoded_bits = self.__padding_builder(encoded_text)
+
+		compressed_data=[padded_encoded_bits[8*i:8*(i+1)] for i in range(len(padded_encoded_bits)//8)]
+
+		compressed_data=[int(i,2) for i in compressed_data]
+
+		compressed_data=''.join(chr(i) for i in compressed_data)		
+
+
+		print("Compressed")
+		return compressed_data
+
 
 		"""----------Decompression------------"""
 
@@ -132,5 +156,18 @@ class HuffmanCode:
 
 
 	def decompress(self, input_path):
-     #to be added later
-		pass
+		#convert string to utf-8
+		#utf-8 to bits
+		byte_arr = bytearray(input_data, 'utf-8')
+		byte_arr=bytes(byte_arr)
+		byte_arr=byte_arr.decode("utf-8") 
+		bytes_as_bits = ''.join(format(ord(byte), '08b') for byte in byte_arr)
+
+		encoded_text = self.__remove_padding(bytes_as_bits)
+		decompressed_text = self.__xml_text_decoder(encoded_text)
+
+
+
+		print("Decompressed")
+		return decompressed_text
+	
