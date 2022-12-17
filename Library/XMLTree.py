@@ -17,14 +17,16 @@ class Node:
         self.is_tag = True
         self.is_open_tag = False
         self.is_close_tag = False
+        self.num_child = 0
+        self.num_attributes = 0
 
 
 class Tree:
-    Space = '\t\t'
-
     def __init__(self):
-        self.root = None            # point to the root of the xml file
-        self.created_nodes = None   # contains the remaining tags after parsing
+        self.root = None  # point to the root of the xml file
+        self.created_nodes = None  # contains the remaining tags after parsing
+        self.file_state_xml = None  # TODO should be updated while the user keep editing the file!
+        self.json_file = None  # TODO store the the json file to be saved in created file!
 
     def __check_tag(self, xmlTagsSt: list[Node], end_tag_node: Node):
         temp_stack = []
@@ -51,6 +53,7 @@ class Tree:
                     while temp_stack:
                         current_node_in_temp = temp_stack.pop()
                         found_open_tag.children.append(current_node_in_temp)
+                        found_open_tag.num_child += 1
                     end_tag_node.is_valid = True
                     xmlTagsSt.append(end_tag_node)
         else:
@@ -98,9 +101,6 @@ class Tree:
                         comment_node.is_tag = True
                         comment_node.hasValue = True
                         comment_node.value = data[1:]
-                        # if there is no root yet!
-                        if not self.root:
-                            self.root = comment_node
                         # push the comment on the stack till find its parent
                         xmlTagsSt.append(comment_node)
 
@@ -123,10 +123,28 @@ class Tree:
                         self.__check_tag(xmlTagsSt, end_tag_node)
 
                     elif data[-1] == '/':  # self close tag
+                        # Note that we can't set the self_closed tag to be the root
+                        # if the root was not assigned to any value yet
+                        # and the self closed tag is in the top of the file
+                        # then its may be non-valid if and only if the file has another tags
+                        # otherwise set the self closed tag as the root
                         data = data[0:-1]
                         self_closed_node = Node()
                         self_closed_node.self_close = True
                         self_closed_node.is_valid = True
+                        if not self.root:
+                            # we should make sure there exist another tags in the file
+                            index_temp = index
+                            flag = False
+                            while index_temp < length_file_string:
+                                if file_string[index_temp] == '<':
+                                    flag = True
+                                    break
+                                index_temp += 1
+
+                            if flag:
+                                self_closed_node.is_valid = False
+
                         if '=' in data:  # then will have an attribute
                             tag_name, attr = data.split()
                             attr_name, attr_value = self.__get_atrribute_value(attr)
@@ -137,7 +155,6 @@ class Tree:
                         else:
                             self_closed_node.tag_name = data.strip()
                         xmlTagsSt.append(self_closed_node)
-                        # Note that we can't set the self_closed tag to be the root
 
                     else:  # this is an open tag
                         open_tag = Node()
@@ -158,7 +175,8 @@ class Tree:
                             self.root = open_tag
                         xmlTagsSt.append(open_tag)
                         data = ""
-                        # iterate until find <
+
+            # iterate until find <
             data = ""
             while index < length_file_string and file_string[index] != '<':
                 data += file_string[index]
@@ -167,8 +185,8 @@ class Tree:
             if data:
                 value_node = Node()
                 value_node.is_tag = False
+                data = " ".join(list(data.split()))
                 value_node.value = data
-                # value_node.hasValue = data
                 self.__data_node(xmlTagsSt, value_node)
         self.created_nodes = xmlTagsSt
 
@@ -195,72 +213,72 @@ class Tree:
             print(f'{sep}<?{root.value}>')
         for child in root.children:
             self.__printTree(child, level + 1)
-        # if root == self.root:
-        #     print(f'{sep}</{root.tag_name}>')
-    def __printJSON(self, root: Node, level=0, temp:list =[],temp1:list =[]):
+
+    def __printJSON(self, root: Node, level=0, temp: list = [], temp1: list = []):
         sep = level * "\t"
-        flag_list_close=False
-        flag_set_close=False
-        length=len(root.children)
+        flag_list_close = False
+        flag_set_close = False
+        length = len(root.children)
         if not root:
             return
-        if(length==0):
-            if(len(temp)==1 and root.tag_name==temp[0] ):
+        if (length == 0):
+            if (len(temp) == 1 and root.tag_name == temp[0]):
                 temp.pop()
-                print(sep+" ]")
-                print("}") 
+                print(sep + " ]")
+                print("}")
             else:
                 for tags in temp:
-                    if(root.tag_name==tags):
+                    if (root.tag_name == tags):
                         temp.pop()
-                        flag_list_close=True     
-                if(flag_list_close):
-                    print(sep+" ]")
-                    flag_list_close=False 
+                        flag_list_close = True
+                if (flag_list_close):
+                    print(sep + " ]")
+                    flag_list_close = False
                 for tags in temp1:
-                    if(root.tag_name==tags):
+                    if (root.tag_name == tags):
                         temp1.pop()
-                        flag_set_close=True
-                if(flag_set_close):
-                    print(sep+" }")
-                    flag_set_close=False     
-        elif(length==1 ):
-            if(root.children[0].value!=None):
-                    print(sep+"\""+root.tag_name +"\":\"",end=" ")
-                    if root.has_attribute:
-                        print("{\""+root.attribute_name+"\":"+root.attribute_value+"}")
-                    else:
-                        print(root.children[0].value+"\",")
-        elif(length>2):
-            if(level==0):
-                print("{\""+root.tag_name+"\"[")
+                        flag_set_close = True
+                if (flag_set_close):
+                    print(sep + " }")
+                    flag_set_close = False
+        elif (length == 1):
+            if (root.children[0].value != None):
+                print(sep + "\"" + root.tag_name + "\":\"", end=" ")
+                if root.has_attribute:
+                    print("{\"" + root.attribute_name + "\":" + root.attribute_value + "}")
+                else:
+                    print(root.children[0].value + "\",")
+        elif (length > 2):
+            if (level == 0):
+                print("{\"" + root.tag_name + "\"[")
                 temp.append(root.tag_name)
-            elif(root.children[0].tag_name!=root.children[2].tag_name):
-                    print(sep+"\""+root.tag_name +"\":",end=" ")
-                    if root.has_attribute:
-                        print("{\""+root.attribute_name+"\":"+root.attribute_value+"}{")
-                    else:
-                        print(root.children[0].value,end=" ")
-                        print("{")
-                    temp1.append(root.tag_name)
-            else:   
+            elif (root.children[0].tag_name != root.children[2].tag_name):
+                print(sep + "\"" + root.tag_name + "\":", end=" ")
+                if root.has_attribute:
+                    print("{\"" + root.attribute_name + "\":" + root.attribute_value + "}{")
+                else:
+                    print(root.children[0].value, end=" ")
+                    print("{")
+                temp1.append(root.tag_name)
+            else:
                 if root.is_open_tag:
-                    print(sep+"\""+root.tag_name +"\":",end=" ")
+                    print(sep + "\"" + root.tag_name + "\":", end=" ")
                     if root.has_attribute:
-                        print("{\""+root.attribute_name+"\":"+root.attribute_value+"}{")
+                        print("{\"" + root.attribute_name + "\":" + root.attribute_value + "}{")
                     else:
-                        print(root.children[0].value,end='')
+                        print(root.children[0].value, end='')
                         print("[")
                         temp.append(root.tag_name)
 
         elif root.self_close:
-                print(sep+"\""+root.tag_name+"\"")
+            print(sep + "\"" + root.tag_name + "\"")
         elif root.comment:
-                pass
+            pass
         elif root.xml_version:
-                pass
+            pass
         for child in root.children:
-            self.__printJSON(child, level + 1,temp,temp1)
+            self.__printJSON(child, level + 1, temp, temp1)
+
     # need to edit
     def __correctionTree(self, root: Node, parent: Node):
         if not root.is_valid:
@@ -298,78 +316,87 @@ class Tree:
                     parent.children.append(end_tag_node)
 
                 # should be correct in case of close tags!
-                
+
                 elif root.is_close_tag:
-                     root.is_valid = True
-                     open_tag_node = Node()
-                     open_tag_node.tag_name = root.tag_name
-                     open_tag_node.is_tag = True
-                     open_tag_node.is_open_tag = True
-                     open_tag_node.is_valid = True
-                     index_end = parent.children.index(root)    
-                     if(not parent.children[index_end-1].is_tag):
-                            open_tag_node.hasValue=True  
-                            parent.children[index_end-1].is_valid=True
-                            open_tag_node.children.append(parent.children.pop(index_end-1))
-                            parent.children.insert(index_end-1, open_tag_node)
-                    #to_do handle case open tag missing without data
-                     else:
-                        open_tag_node.hasValue= False
+                    root.is_valid = True
+                    open_tag_node = Node()
+                    open_tag_node.tag_name = root.tag_name
+                    open_tag_node.is_tag = True
+                    open_tag_node.is_open_tag = True
+                    open_tag_node.is_valid = True
+                    index_end = parent.children.index(root)
+                    if (not parent.children[index_end - 1].is_tag):
+                        open_tag_node.hasValue = True
+                        parent.children[index_end - 1].is_valid = True
+                        open_tag_node.children.append(parent.children.pop(index_end - 1))
+                        parent.children.insert(index_end - 1, open_tag_node)
+                    # to_do handle case open tag missing without data
+                    else:
+                        open_tag_node.hasValue = False
                         queue = []
-                        i =0
-                        if(open_tag_node.tag_name[-1]=='s'):
-                            while i <index_end:
-                                if(parent.children[i].is_tag):
-                                    if open_tag_node.tag_name[0:len(open_tag_node.value) - 1] in parent.children[i].tag_name:
+                        i = 0
+                        if (open_tag_node.tag_name[-1] == 's'):
+                            while i < index_end:
+                                if (parent.children[i].is_tag):
+                                    if open_tag_node.tag_name[0:len(open_tag_node.value) - 1] in parent.children[
+                                        i].tag_name:
                                         current = parent.children.pop(i)
-                                        i-=1
-                                        index_end-=1
+                                        i -= 1
+                                        index_end -= 1
                                         queue.append(current)
                                 i = i + 1
                         else:
-                                print("hi")
-                                while i <index_end:
-                                    current = parent.children.pop(0)
-                                    queue.append(current)
-                                    i = i + 1
+                            print("hi")
+                            while i < index_end:
+                                current = parent.children.pop(0)
+                                queue.append(current)
+                                i = i + 1
                         while (queue):
                             open_tag_node.children.append(queue.pop(0))
-                        index_end=parent.children.index(root)  
-                        parent.children.insert(index_end,open_tag_node)
-
+                        index_end = parent.children.index(root)
+                        parent.children.insert(index_end, open_tag_node)
 
         for child in root.children:
             self.__correctionTree(child, root)
 
     # def def_validation(self,node):
 
-
     def __delete_data(self, root: Node, parent: Node):
         if not root.is_tag:
-                        if not root.is_valid :
-                            index=parent.children.index(root)
-                            parent.children.pop(index)
+            if not root.is_valid:
+                index = parent.children.index(root)
+                parent.children.pop(index)
         for child in root.children:
             self.__delete_data(child, root)
-                    
+
     def correter_XML(self):
-        for node in self.created_nodes:
+        nodes_to_remove = []
+        for index, node in enumerate(self.created_nodes):
             if node is self.root:
+
                 if not node.is_valid:
                     # correct the root node before going to its children
                     end_tag_root = Node()
                     end_tag_root.tag_name = self.root.tag_name
                     end_tag_root.is_close_tag = True
                     self.__check_tag(self.created_nodes, end_tag_root)
-
                 for child in node.children:
                     self.__correctionTree(child, node)
-                for child in node.children:
-                    self.__delete_data(child, node)
+
+
+            # in case non-valid self closed tag
+            # the tag should be removed due to the file shouldn't contain multiple roots!
+            elif node.self_close and not node.is_valid:
+                nodes_to_remove.append(node)
+
+        # delete non-valid tags
+        for node in nodes_to_remove:
+            self.created_nodes.remove(node)
 
     def visualizeXML(self):
         for nodes in self.created_nodes:
             self.__printTree(nodes)
+
     def visualizeJSON(self):
         for nodes in self.created_nodes:
             self.__printJSON(nodes)
@@ -409,6 +436,6 @@ if __name__ == '__main__':
   """
     xmlTree = Tree()
     xmlTree.parser(file_string)
-    #xmlTree.visualizeJSON()
+    # xmlTree.visualizeJSON()
     xmlTree.correter_XML()
     xmlTree.visualizeXML()
