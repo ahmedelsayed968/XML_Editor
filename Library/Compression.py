@@ -108,7 +108,7 @@ class HuffmanCode:
 
 	"""-------------Compression---------------"""
 	def compress(self):
-		 data = self.data
+		data = self.data
 		data = data.rstrip()
 		frequency = self.__freq_dict_builder(data)
 		self.__heap_builder(frequency)
@@ -155,7 +155,7 @@ class HuffmanCode:
 		return decoded_xml_text
 
 
-	def decompress(self, input_path):
+	def decompress(self, input_data):
 		#convert string to utf-8
 		#utf-8 to bits
 		byte_arr = bytearray(input_data, 'utf-8')
