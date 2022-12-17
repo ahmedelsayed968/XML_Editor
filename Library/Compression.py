@@ -1,6 +1,6 @@
 #Huffman Compression
 import heapq
-import os
+
 
 def minify(data):
     
