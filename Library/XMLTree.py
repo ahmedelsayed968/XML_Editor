@@ -71,7 +71,7 @@ class Tree:
     def __data_node(self, stackTags: list[Node], dataNode: Node):
         if stackTags:
             top = stackTags[-1]
-            if top.is_open_tag:
+            if top.is_open_tag and self.root is not top:
                 top.hasValue = True
                 dataNode.is_valid = True
                 top.children.append(dataNode)
@@ -92,6 +92,20 @@ class Tree:
         length_file_string = len(file_string)
         index = 0
         xmlTagsSt = []
+        trash = ""
+        while index < length_file_string and file_string[index] != '<':
+            trash += file_string[index]
+            index += 1
+        trash = trash.strip()
+
+        if trash != "":
+            data_node = Node()
+            data_node.is_valid = False
+            data_node.is_tag = False
+            data_node.value = trash
+            xmlTagsSt.append(data_node)
+
+        # assuming the start of the file with <
         while index < length_file_string:
             if file_string[index] == '<':
                 # then get the data between < and  >
@@ -198,7 +212,7 @@ class Tree:
                 value_node.value = data
                 self.__data_node(xmlTagsSt, value_node)
         self.created_nodes = xmlTagsSt
-        self.update_file_state(Status.initial_status)
+        self.update_file_state(Status.prettifying)
 
     def __printTree(self, root: Node, level=0):
         sep = level * "\t"
@@ -221,6 +235,8 @@ class Tree:
             print(f'{sep}<!{root.value}>')
         elif root.xml_version:
             print(f'{sep}<?{root.value}>')
+        elif not root.is_valid:
+            print(f'{sep}{root.value}')
         for child in root.children:
             self.__printTree(child, level + 1)
 
@@ -335,35 +351,53 @@ class Tree:
                     open_tag_node.is_open_tag = True
                     open_tag_node.is_valid = True
                     index_end = parent.children.index(root)
-                    if (not parent.children[index_end - 1].is_tag):
-                        open_tag_node.hasValue = True
-                        parent.children[index_end - 1].is_valid = True
-                        open_tag_node.children.append(parent.children.pop(index_end - 1))
-                        parent.children.insert(index_end - 1, open_tag_node)
-                    # to_do handle case open tag missing without data
-                    else:
-                        open_tag_node.hasValue = False
-                        queue = []
-                        i = 0
-                        if (open_tag_node.tag_name[-1] == 's'):
-                            while i < index_end:
-                                if (parent.children[i].is_tag):
-                                    if open_tag_node.tag_name[0:len(open_tag_node.value) - 1] in parent.children[
-                                        i].tag_name:
-                                        current = parent.children.pop(i)
-                                        i -= 1
-                                        index_end -= 1
-                                        queue.append(current)
-                                i = i + 1
-                        else:
-                            while i < index_end:
-                                current = parent.children.pop(0)
-                                queue.append(current)
-                                i = i + 1
-                        while (queue):
-                            open_tag_node.children.append(queue.pop(0))
-                        index_end = parent.children.index(root)
-                        parent.children.insert(index_end, open_tag_node)
+                    parent.children.insert(index_end, open_tag_node)
+                    # if (not parent.children[index_end - 1].is_tag):
+                    #     open_tag_node.hasValue = True
+                    #     parent.children[index_end - 1].is_valid = True
+                    #     open_tag_node.children.append(parent.children.pop(index_end - 1))
+                    #     parent.children.insert(index_end - 1, open_tag_node)
+                    # # to_do handle case open tag missing without data
+                    # else:
+                    #     open_tag_node.hasValue = False
+                    #     queue = []
+                    #     i = 0
+                    #     if (open_tag_node.tag_name[-1] == 's'):
+                    #         while i < index_end:
+                    #             if (parent.children[i].is_tag):
+                    #                 if open_tag_node.tag_name[0:len(open_tag_node.value) - 1] in parent.children[
+                    #                     i].tag_name:
+                    #                     current = parent.children.pop(i)
+                    #                     i -= 1
+                    #                     index_end -= 1
+                    #                     queue.append(current)
+                    #             i = i + 1
+                    #     else:
+                    #         while i < index_end:
+                    #             current = parent.children.pop(0)
+                    #             queue.append(current)
+                    #             i = i + 1
+                    #     while (queue):
+                    #         open_tag_node.children.append(queue.pop(0))
+                    #     index_end = parent.children.index(root)
+                    #     parent.children.insert(index_end, open_tag_node)
+            else:
+                # this not a tag so will be data
+                index_data = parent.children.index(root)
+                length_children = len(parent.children)
+                if index_data + 1 < length_children and parent.children[index_data + 1].is_close_tag:
+                    root.is_valid = True
+                    open_created_tag = Node()
+                    open_created_tag.is_open_tag = True
+                    open_created_tag.is_valid = True
+                    open_created_tag.tag_name = parent.children[index_data + 1].tag_name
+                    parent.children[index_data + 1].is_valid = True  # set close tag to be valid
+                    open_created_tag.children.append(parent.children.pop(index_data))
+                    parent.children.insert(index_data, open_created_tag)  # insert the open tag to the parent!
+                    open_created_tag.hasValue = True
+                else:
+                    # remove undefined data!
+                    return root
 
         for child in root.children:
             self.__correctionTree(child, root)
@@ -380,7 +414,7 @@ class Tree:
         nodes_to_remove = []
         for index, node in enumerate(self.created_nodes):
             if node is self.root:
-
+                remove_from_root = []
                 if not node.is_valid:
                     # correct the root node before going to its children
                     end_tag_root = Node()
@@ -388,12 +422,19 @@ class Tree:
                     end_tag_root.is_close_tag = True
                     self.__check_tag(self.created_nodes, end_tag_root)
                 for child in node.children:
-                    self.__correctionTree(child, node)
+                    returned_node = self.__correctionTree(child, node)
+                    if returned_node:
+                        remove_from_root.append(returned_node)
+
+                for n in remove_from_root:
+                    self.root.children.remove(n)
 
 
             # in case non-valid self closed tag
             # the tag should be removed due to the file shouldn't contain multiple roots!
             elif node.self_close and not node.is_valid:
+                nodes_to_remove.append(node)
+            elif not node.is_tag and not node.is_valid:
                 nodes_to_remove.append(node)
 
         # delete non-valid tags
@@ -432,6 +473,8 @@ class Tree:
             new_line = f'{sep}<!{root.value}>\n'
         elif root.xml_version:
             new_line = f'{sep}<?{root.value}>\n'
+        elif not root.is_valid:
+            new_line = f'{sep}{root.value}\n'
         self.file_state_xml += new_line
         for child in root.children:
             self.__edit_prettifying(child, level + 1)
@@ -486,231 +529,41 @@ class Tree:
         elif status == Status.initial_status:
             self.file_state_xml = self.passed_file
 
+    def __check_node(self, node, non_valid_lines: list[int], line=1):
+        if not node.is_valid:
+            non_valid_lines.append(line)
+            line += 1
+        if node.children:
+            for child in node.children:
+                line = self.__check_node(child, non_valid_lines, line + 1)
+        elif node.is_valid:
+            line += 1
+
+        return line
+
+    # get list of unValid lines!
+    def check_validation(self):
+        line = 1
+        non_valid_lines = []
+        for node in self.created_nodes:
+            line = self.__check_node(node,  non_valid_lines,line)
+        return non_valid_lines
+
 
 if __name__ == '__main__':
-    file_string = """
-<?xml version="1.0"?>
-<catalog>
-   <book id="bk101">
-      <author>Gambardella, Matthew</author>
-      <title>XML Developer's Guide</title>
-      <genre>Computer</genre>
-      <price>44.95</price>
-      <publish_date>2000-10-01</publish_date>
-      <description>An in-depth look at creating applications 
-      with XML.</description>
-   </book>
-   <book id="bk102">
-      <author>Ralls, Kim</author>
-      <title>Midnight Rain</title>
-      <genre>Fantasy</genre>
-      <price>5.95</price>
-      <publish_date>2000-12-16</publish_date>
-      <description>A former architect battles corporate zombies, 
-      an evil sorceress, and her own childhood to become queen 
-      of the world.</description>
-   </book>
-   <book id="bk103">
-      <author>Corets, Eva</author>
-      <title>Maeve Ascendant</title>
-      <genre>Fantasy</genre>
-      <price>5.95</price>
-      <publish_date>2000-11-17</publish_date>
-      <description>After the collapse of a nanotechnology 
-      society in England, the young survivors lay the 
-      foundation for a new society.</description>
-   </book>
-   <book id="bk104">
-      <author>Corets, Eva</author>
-      <title>Oberon's Legacy</title>
-      <genre>Fantasy</genre>
-      <price>5.95</price>
-      <publish_date>2001-03-10</publish_date>
-      <description>In post-apocalypse England, the mysterious 
-      agent known only as Oberon helps to create a new life 
-      for the inhabitants of London. Sequel to Maeve 
-      Ascendant.</description>
-   </book>
-   <book id="bk105">
-      <author>Corets, Eva</author>
-      <title>The Sundered Grail</title>
-      <genre>Fantasy</genre>
-      <price>5.95</price>
-      <publish_date>2001-09-10</publish_date>
-      <description>The two daughters of Maeve, half-sisters, 
-      battle one another for control of England. Sequel to 
-      Oberon's Legacy.</description>
-   </book>
-   <book id="bk106">
-      <author>Randall, Cynthia</author>
-      <title>Lover Birds</title>
-      <genre>Romance</genre>
-      <price>4.95</price>
-      <publish_date>2000-09-02</publish_date>
-      <description>When Carla meets Paul at an ornithology 
-      conference, tempers fly as feathers get ruffled.</description>
-   </book>
-   <book id="bk107">
-      <author>Thurman, Paula</author>
-      <title>Splish Splash</title>
-      <genre>Romance</genre>
-      <price>4.95</price>
-      <publish_date>2000-11-02</publish_date>
-      <description>A deep sea diver finds true love twenty 
-      thousand leagues beneath the sea.</description>
-   </book>
-   <book id="bk108">
-      <author>Knorr, Stefan</author>
-      <title>Creepy Crawlies</title>
-      <genre>Horror</genre>
-      <price>4.95</price>
-      <publish_date>2000-12-06</publish_date>
-      <description>An anthology of horror stories about roaches,
-      centipedes, scorpions  and other insects.</description>
-      <posts>
-            <post>
-                <body>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                </body>
-                <topics>
-                    <topic>
-                        sports
-                    </topic>
-                </topics>
-            </post>
-        </posts>
-   </book>
-   <book id="bk109">
-      <author>Kress, Peter</author>
-      <title>Paradox Lost</title>
-      <genre>Science Fiction</genre>
-      <price>6.95</price>
-      <publish_date>2000-11-02</publish_date>
-      <description>After an inadvertant trip through a Heisenberg
-      Uncertainty Device, James Salway discovers the problems 
-      of being quantum.</description>
-   </book>
-   <book id="bk110">
-      <author>O'Brien, Tim</author>
-      <title>Microsoft .NET: The Programming Bible</title>
-      <genre>Computer</genre>
-      <price>36.95</price>
-      <publish_date>2000-12-09</publish_date>
-      <description>Microsoft's .NET initiative is explored in 
-      detail in this deep programmer's reference.</description>
-   </book>
-   <book id="bk111">
-      <author>O'Brien, Tim</author>
-      <title>MSXML3: A Comprehensive Guide</title>
-      <genre>Computer</genre>
-      <price>36.95</price>
-      <publish_date>2000-12-01</publish_date>
-      <description>The Microsoft MSXML3 parser is covered in 
-      detail, with attention to XML DOM interfaces, XSLT processing, 
-      SAX and more.</description>
-   </book>
-   <book id="bk112">
-      <author>Galos, Mike</author>
-      <title>Visual Studio 7: A Comprehensive Guide</title>
-      <genre>Computer</genre>
-      <price>49.95</price>
-      <publish_date>2001-04-16</publish_date>
-      <description>Microsoft Visual Studio 7 is explored in depth,
-      looking at how Visual Basic, Visual C++, C#, and ASP+ are 
-      integrated into a comprehensive development 
-      environment.</description>
-   </book>
-</catalog>
-  """
-    test = """<users>
-       <!--    -->
-        <user atrr="ahmed">
-            <id>1</id>
-            <name>Ahmed Ali</name>
-            <posts>
-                <post>
-                    <body>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                    </body>
-                    <topics>
-                        <topic>
-                            economy
-                        </topic>
-                        <topic>
-                            finance
-                        </topic>
-                    </topics>
-                </post>
-                <post>
-                    <body>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                    </body>
-                    <topics>
-                        <topic>
-                            solar_energy
-                        </topic>
-                    </topics>
-                </post>
-            </posts>
-            <followers>
-                <follower>
-                    <id>2</id>
-                </follower>
-                <follower>
-                    <id>3</id>
-                </follower>
-            </followers>
-        </user>
-        <user>
-            <id>2</id>
-            <name>Yasser Ahmed</name>
-            <posts>
-                <post>
-                    <body>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                    </body>
-                    <topics>
-                        <topic>
-                            education
-                        </topic>
-                    </topics>
-                </post>
-            </posts>
-            <followers>
-                <follower>
-                    <id>1</id>
-                </follower>
-            </followers>
-        </user>
-        <user>
-            <id>3</id>
-            <name>Mohamed Sherif</name>
-            <posts>
-                <post>
-                    <body>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                    </body>
-                    <topics>
-                        <topic>
-                            sports
-                        </topic>
-                    </topics>
-                </post>
-            </posts>
-            <followers>
-                <follower>
-                    <id>1</id>
-                </follower>
-            </followers>
-        </user>
-
-
-    </users>"""
+    test = """11
+    <users>
+        Ahmed Ali</name>
+        11
+        11
+        11<id>
+        <posts><post>
+                """
     xmlTree = Tree()
-    xmlTree.parser(file_string)
-
-    # xmlTree.visualizeJSON()
-    # xmlTree.correter_XML()
-    # xmlTree.visualizeXML()
-    xmlTree.update_file_state(Status.prettifying)
+    xmlTree.parser(test)
     print(xmlTree.file_state_xml)
+    print(xmlTree.check_validation())
+    xmlTree.correter_XML()
+    # xmlTree.visualizeJSON()
+    xmlTree.visualizeXML()
+    # xmlTree.update_file_state(Status.prettifying)
