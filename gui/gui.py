@@ -102,6 +102,10 @@ class App:
         input_text["font"] = ft
         input_text["fg"] = "black"
         input_text.place(x=50, y=150, width=300, height=400)
+        input_bar = Scrollbar(input_text)
+        input_bar.pack(side=RIGHT, fill=Y)
+        input_bar.config(command=input_text.yview)
+        input_text.config(yscrollcommand=input_bar.set)
 
 
         output_text = tk.Text(self.root, state='disabled')
@@ -112,6 +116,10 @@ class App:
         output_text["font"] = ft
         output_text["fg"] = "black"
         output_text.place(x=450, y=150, width=300, height=400)
+        output_bar = Scrollbar(output_text)
+        output_bar.pack(side=RIGHT, fill=Y)
+        output_bar.config(command=output_text.yview)
+        output_text.config(yscrollcommand=output_bar.set)
 
 
 
