@@ -397,7 +397,7 @@ class Tree:
                     open_created_tag.hasValue = True
                 else:
                     # remove undefined data!
-                    return root
+                    return root, parent
 
         for child in root.children:
             self.__correctionTree(child, root)
@@ -414,7 +414,7 @@ class Tree:
         nodes_to_remove = []
         for index, node in enumerate(self.created_nodes):
             if node is self.root:
-                remove_from_root = []
+                del_from_root = {}
                 if not node.is_valid:
                     # correct the root node before going to its children
                     end_tag_root = Node()
@@ -424,10 +424,16 @@ class Tree:
                 for child in node.children:
                     returned_node = self.__correctionTree(child, node)
                     if returned_node:
-                        remove_from_root.append(returned_node)
-
-                for n in remove_from_root:
-                    self.root.children.remove(n)
+                        parent = returned_node[1]
+                        returned_node__ = returned_node[0]
+                        if parent in del_from_root:
+                            del_from_root[parent].append(returned_node__)
+                        else:
+                            del_from_root[parent] = list()
+                            del_from_root[parent].append(returned_node__)
+                for parent in del_from_root.keys():
+                    for child in del_from_root[parent]:
+                        parent.children.remove(child)
 
 
             # in case non-valid self closed tag
@@ -546,7 +552,7 @@ class Tree:
         line = 1
         non_valid_lines = []
         for node in self.created_nodes:
-            line = self.__check_node(node,  non_valid_lines,line)
+            line = self.__check_node(node, non_valid_lines, line)
         return non_valid_lines
 
 
@@ -554,8 +560,9 @@ if __name__ == '__main__':
     test = """11
     <users>
         Ahmed Ali</name>
-        11
-        11
+        <d/>11
+        <d/>11
+        </d>
         11<id>
         <posts><post>
                 """
