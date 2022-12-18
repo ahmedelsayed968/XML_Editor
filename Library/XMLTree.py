@@ -26,6 +26,7 @@ class Node:
         self.is_close_tag = False
         self.num_child = 0
         self.num_attributes = 0
+        self.outputstring=""
 
 
 class Tree:
@@ -250,60 +251,60 @@ class Tree:
         if (length == 0):
             if (len(temp) == 1 and root.tag_name == temp[0]):
                 temp.pop()
-                print(sep + " ]")
-                print("}")
+                self.outputstring+=sep + " ]\n"
+                self.outputstring+="}\n"
             else:
                 for tags in temp:
                     if (root.tag_name == tags):
                         temp.pop()
                         flag_list_close = True
                 if (flag_list_close):
-                    print(sep + " ]")
+                    self.outputstring+=sep + " ]\n"
                     flag_list_close = False
                 for tags in temp1:
                     if (root.tag_name == tags):
                         temp1.pop()
                         flag_set_close = True
                 if (flag_set_close):
-                    print(sep + " }")
+                    self.outputstring+=sep + " }\n"
                     flag_set_close = False
         elif (length == 1):
             if (root.children[0].value != None):
-                print(sep + "\"" + root.tag_name + "\":\"", end=" ")
+                self.outputstring+=sep + "\"" + root.tag_name + "\":\""
                 if root.has_attribute:
-                    print("{\"" + root.attribute_name + "\":" + root.attribute_value + "}")
+                    self.outputstring+="{\"" + root.attribute_name + "\":" + root.attribute_value + "}\n"
                 else:
-                    print(root.children[0].value + "\",")
+                    self.outputstring+=root.children[0].value + "\",\n"
         elif (length > 2):
             if (level == 0):
-                print("{\"" + root.tag_name + "\"[")
+                self.outputstring+="{\""+ root.tag_name + "\"[\n"
                 temp.append(root.tag_name)
             elif (root.children[0].tag_name != root.children[2].tag_name):
-                print(sep + "\"" + root.tag_name + "\":", end=" ")
+                self.outputstring+=sep + "\"" + root.tag_name + "\":{\n"
                 if root.has_attribute:
-                    print("{\"" + root.attribute_name + "\":" + root.attribute_value + "}{")
+                    self.outputstring+"{\"" + root.attribute_name + "\":" + root.attribute_value + "}{\n"
                 else:
-                    print(root.children[0].value, end=" ")
-                    print("{")
+                    self.outputstring+=root.children[0].value
+                    self.outputstring+="{\n"
                 temp1.append(root.tag_name)
             else:
                 if root.is_open_tag:
-                    print(sep + "\"" + root.tag_name + "\":", end=" ")
+                    self.outputstring+=sep + "\"" + root.tag_name + "\":"
                     if root.has_attribute:
-                        print("{\"" + root.attribute_name + "\":" + root.attribute_value + "}{")
+                        self.outputstring+="{\"" + root.attribute_name + "\":" + root.attribute_value + "}{\n"
                     else:
-                        print(root.children[0].value, end='')
-                        print("[")
+                        self.outputstring+=root.children[0].value
+                        self.outputstring+="[\n"
                         temp.append(root.tag_name)
 
         elif root.self_close:
-            print(sep + "\"" + root.tag_name + "\"")
+            self.outputstring+=sep + "\"" + root.tag_name + "\""
         elif root.comment:
             pass
         elif root.xml_version:
             pass
         for child in root.children:
-            self.__printJSON(child, level + 1, temp, temp1)
+            self.__printJSON(child,level + 1, temp, temp1)
 
     # need to edit
     def __correctionTree(self, root: Node, parent: Node):
@@ -454,8 +455,10 @@ class Tree:
             self.__printTree(nodes)
 
     def visualizeJSON(self):
+        self.outputstring=""
         for nodes in self.created_nodes:
             self.__printJSON(nodes)
+        print(self.outputstring)
 
     def __edit_prettifying(self, root: Node, level=0):
         sep = level * "\t"
@@ -557,20 +560,128 @@ class Tree:
 
 
 if __name__ == '__main__':
-    test = """11
-    <users>
-        Ahmed Ali</name>
-        <d/>11
-        <d/>11
-        </d>
-        11<id>
-        <posts><post>
+    test = """<?xml version="1.0"?>
+<catalog>
+   <book id="bk101">
+      <author>Gambardella, Matthew</author>
+      <title>XML Developer's Guide</title>
+      <genre>Computer</genre>
+      <price>44.95</price>
+      <publish_date>2000-10-01</publish_date>
+      <description>An in-depth look at creating applications 
+      with XML.</description>
+   </book>
+   <book id="bk102">
+      <author>Ralls, Kim</author>
+      <title>Midnight Rain</title>
+      <genre>Fantasy</genre>
+      <price>5.95</price>
+      <publish_date>2000-12-16</publish_date>
+      <description>A former architect battles corporate zombies, 
+      an evil sorceress, and her own childhood to become queen 
+      of the world.</description>
+   </book>
+   <book id="bk103">
+      <author>Corets, Eva</author>
+      <title>Maeve Ascendant</title>
+      <genre>Fantasy</genre>
+      <price>5.95</price>
+      <publish_date>2000-11-17</publish_date>
+      <description>After the collapse of a nanotechnology 
+      society in England, the young survivors lay the 
+      foundation for a new society.</description>
+   </book>
+   <book id="bk104">
+      <author>Corets, Eva</author>
+      <title>Oberon's Legacy</title>
+      <genre>Fantasy</genre>
+      <price>5.95</price>
+      <publish_date>2001-03-10</publish_date>
+      <description>In post-apocalypse England, the mysterious 
+      agent known only as Oberon helps to create a new life 
+      for the inhabitants of London. Sequel to Maeve 
+      Ascendant.</description>
+   </book>
+   <book id="bk105">
+      <author>Corets, Eva</author>
+      <title>The Sundered Grail</title>
+      <genre>Fantasy</genre>
+      <price>5.95</price>
+      <publish_date>2001-09-10</publish_date>
+      <description>The two daughters of Maeve, half-sisters, 
+      battle one another for control of England. Sequel to 
+      Oberon's Legacy.</description>
+   </book>
+   <book id="bk106">
+      <author>Randall, Cynthia</author>
+      <title>Lover Birds</title>
+      <genre>Romance</genre>
+      <price>4.95</price>
+      <publish_date>2000-09-02</publish_date>
+      <description>When Carla meets Paul at an ornithology 
+      conference, tempers fly as feathers get ruffled.</description>
+   </book>
+   <book id="bk107">
+      <author>Thurman, Paula</author>
+      <title>Splish Splash</title>
+      <genre>Romance</genre>
+      <price>4.95</price>
+      <publish_date>2000-11-02</publish_date>
+      <description>A deep sea diver finds true love twenty 
+      thousand leagues beneath the sea.</description>
+   </book>
+   <book id="bk108">
+      <author>Knorr, Stefan</author>
+      <title>Creepy Crawlies</title>
+      <genre>Horror</genre>
+      <price>4.95</price>
+      <publish_date>2000-12-06</publish_date>
+      <description>An anthology of horror stories about roaches,
+      centipedes, scorpions  and other insects.</description>
+   </book>
+   <book id="bk109">
+      <author>Kress, Peter</author>
+      <title>Paradox Lost</title>
+      <genre>Science Fiction</genre>
+      <price>6.95</price>
+      <publish_date>2000-11-02</publish_date>
+      <description>After an inadvertant trip through a Heisenberg
+      Uncertainty Device, James Salway discovers the problems 
+      of being quantum.</description>
+   </book>
+   <book id="bk110">
+      <author>O'Brien, Tim</author>
+      <title>Microsoft .NET: The Programming Bible</title>
+      <genre>Computer</genre>
+      <price>36.95</price>
+      <publish_date>2000-12-09</publish_date>
+      <description>Microsoft's .NET initiative is explored in 
+      detail in this deep programmer's reference.</description>
+   </book>
+   <book id="bk111">
+      <author>O'Brien, Tim</author>
+      <title>MSXML3: A Comprehensive Guide</title>
+      <genre>Computer</genre>
+      <price>36.95</price>
+      <publish_date>2000-12-01</publish_date>
+      <description>The Microsoft MSXML3 parser is covered in 
+      detail, with attention to XML DOM interfaces, XSLT processing, 
+      SAX and more.</description>
+   </book>
+   <book id="bk112">
+      <author>Galos, Mike</author>
+      <title>Visual Studio 7: A Comprehensive Guide</title>
+      <genre>Computer</genre>
+      <price>49.95</price>
+      <publish_date>2001-04-16</publish_date>
+      <description>Microsoft Visual Studio 7 is explored in depth,
+      looking at how Visual Basic, Visual C++, C#, and ASP+ are 
+      integrated into a comprehensive development 
+      environment.</description>
+   </book>
+</catalog>
                 """
     xmlTree = Tree()
     xmlTree.parser(test)
-    print(xmlTree.file_state_xml)
-    print(xmlTree.check_validation())
-    xmlTree.correter_XML()
-    # xmlTree.visualizeJSON()
-    xmlTree.visualizeXML()
+    xmlTree.visualizeJSON()
     # xmlTree.update_file_state(Status.prettifying)
