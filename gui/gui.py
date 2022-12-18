@@ -93,3 +93,45 @@ class App:
         Button7.place(x=360,y=400,width=70,height=25)
         Button7["command"] = self.prettify
 
+        input_text=tk.Text(root)
+        input_text["borderwidth"] = "3px"
+        ft = tkFont.Font(family='Times',size=10)
+        input_text["font"] = ft
+        input_text["fg"] = "black"
+        input_text.place(x=50,y=150,width=300,height=400)
+
+        output_text=tk.Text(root,state='disabled')
+        # Insert the string into the Text widget
+        output_text.insert('1.0', 'This is a read-only string')
+        output_text["borderwidth"] = "3px"
+        ft = tkFont.Font(family='Times',size=10)
+        output_text["font"] = ft
+        output_text["fg"] = "black"
+        output_text.place(x=450,y=150,width=300,height=400)
+
+        welcome_label=tk.Label(root)
+        ft = tkFont.Font(family='Arial',size=14)
+        welcome_label["font"] = ft
+        welcome_label["fg"] = "#333333"
+        welcome_label["justify"] = "center"
+        welcome_label["text"] = "Welcome to XML editor"
+        welcome_label.place(x=280,y=50,width=234,height=41)
+        root.mainloop()
+
+    def check_valid(self):
+        pass
+    def fix_errors(self):
+        pass
+    def prettify(self):
+        pass
+    def minify(self):
+        pass
+    def compress(self):
+        pass
+    def convert_to_json(self):
+        pass
+    def prettify(self):
+        pass
+
+if __name__ == "__main__":
+    app = App()
