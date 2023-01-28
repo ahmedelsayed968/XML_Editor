@@ -1,4 +1,107 @@
+import tkinter as tk
+import tkinter.font as tkFont
+from tkinter import *
+from tkinter import filedialog
+import tkinter.ttk as ttk
+import check_validation
+import XMLTree
+from Compression import HuffmanCode
 
+class App:
+    def _init_(self):
+        # setting title
+        self.root = tk.Tk()
+        self.root.title("xml editor")
+        self.root.PATH = None
+        self.input_str = None
+
+        # setting window size
+        width = 1200 #400
+        height = 700 #100
+
+        screenwidth = self.root.winfo_screenwidth()
+        screenheight = self.root.winfo_screenheight()
+        alignstr = '%dx%d+%d+%d' % (width, height, (screenwidth - width) / 2, (screenheight - height) / 2)
+        self.root.geometry(alignstr)
+        self.root.resizable(width=False, height=False)
+
+        xml_cover = PhotoImage(file='E:\XML_Editor\Library\photo.png')
+        #Create a label to display the image
+        label = Label(self.root, image=xml_cover)
+        label.place(x=0, y=0)
+        input_text = tk.Text(self.root)
+        input_text.pack()
+        input_text["borderwidth"] = "3px"
+        ft = tkFont.Font(family='Times', size=10)
+        input_text["font"] = ft
+        input_text["fg"] = "black"
+        input_text.place(x=50, y=150, width=500, height=500)
+        input_bar = Scrollbar(input_text)
+        input_bar.pack(side=RIGHT, fill=Y)
+        input_bar.config(command=input_text.yview)
+        input_text.config(yscrollcommand=input_bar.set)
+        output_text = tk.Text(self.root, state='disabled')
+        # Insert the string into the Text widget
+        output_text.insert('1.0', 'This is a read-only string')
+        output_text["borderwidth"] = "3px"
+        ft = tkFont.Font(family='Times', size=10)
+        output_text["font"] = ft
+        output_text["fg"] = "black"
+        output_text.place(x=650, y=150, width=500, height=500)
+        output_bar = Scrollbar(output_text)
+        output_bar.pack(side=RIGHT, fill=Y)
+        output_bar.config(command=output_text.yview)
+        output_text.config(yscrollcommand=output_bar.set) 
+         # adding the main manu
+        main_manu = Menu(self.root, background='blue', fg="#DCDC14")
+        self.root.config(menu=main_manu)
+        File_manu = Menu(main_manu)
+        main_manu.add_cascade(label="File", menu=File_manu)
+        File_manu.add_command(label="Open New File", command=lambda : load_file(self))
+        File_manu.add_separator()
+        File_manu.add_command(label="Save...", command=lambda : save_file(self),state='disabled')
+        File_manu.add_separator()
+        File_manu.add_command(label="Exit", command=lambda : self.root.quit())
+    
+        def check_valid(self):
+            self.input_str=input_text.get("1.0", END)
+            output_text.config(state='normal')
+            output_text.delete("1.0", END)
+            answer=check_validation.valid(self.input_str)
+            File_manu.entryconfig(3,state=DISABLED)
+            if(answer):
+                output_text.insert(INSERT, "the xml is valid")
+            else:
+                output_text.insert(INSERT, "the xml is not valid")
+            
+
+            output_text.config(state='disabled')
+
+        
+        def fix_errors(self):
+            self.input_str=input_text.get("1.0", END)
+            output_text.config(state='normal')
+            output_text.delete("1.0", END)
+            xmlTree =  XMLTree.Tree()
+            xmlTree.parser(self.input_str)
+            xmlTree.correter_XML()
+            output_text.insert(INSERT,xmlTree.visualizeXML())
+            output_text.config(state='disabled')
+            File_manu.entryconfig(3,state=NORMAL)
+
+        def prettify(self):
+            self.input_str=input_text.get("1.0", END)
+            output_text.config(state='normal')
+            output_text.delete("1.0", END)
+            if(check_validation.valid(self.input_str)):
+                xmlTree =  XMLTree.Tree()
+                xmlTree.parser(self.input_str)
+                output_text.insert(INSERT,xmlTree.visualizeXML())
+                File_manu.entryconfig(3,state=NORMAL)
+            else:
+                output_text.insert(INSERT, "please enter a valid xml ")
+
+            output_text.config(state='disabled')
         def minify(self):
             self.input_str=input_text.get("1.0", END)
             output_text.config(state='normal')
