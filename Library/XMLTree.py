@@ -248,7 +248,7 @@ class Tree:
         length = len(root.children)
         if not root:
             return
-        if (length == 0):
+        if (length == 0 and len(temp)!=0):
             if (len(temp) == 1 and root.tag_name == temp[0]):
                 temp.pop()
                 self.outputstring+=sep + " ]\n"
@@ -275,10 +275,11 @@ class Tree:
                     self.outputstring+="{\"" + root.attribute_name + "\":" + root.attribute_value + "}\n"
                 else:
                     self.outputstring+=root.children[0].value + "\",\n"
-        elif (length > 2):
+        elif (length > 2 or level == 0):
             if (level == 0):
-                self.outputstring+="{\""+ root.tag_name + "\"[\n"
-                temp.append(root.tag_name)
+                if(root.tag_name):
+                    self.outputstring+="{\""+ root.tag_name + "\"[\n"
+                    temp.append(root.tag_name)
             elif (root.children[0].tag_name != root.children[2].tag_name):
                 self.outputstring+=sep + "\"" + root.tag_name + "\":{\n"
                 if root.has_attribute:
