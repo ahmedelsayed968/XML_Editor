@@ -26,7 +26,7 @@ class Node:
         self.is_close_tag = False
         self.num_child = 0
         self.num_attributes = 0
-        self.outputstring=""
+        
 
 
 class Tree:
@@ -36,6 +36,7 @@ class Tree:
         self.file_state_xml = None  # should be updated while the user keep editing the file!
         self.json_file = None  # TODO store the the json file that was created after conversion! @Sara
         self.passed_file = None
+        self.outputstring=""
 
     def __check_tag(self, xmlTagsSt: list[Node], end_tag_node: Node):
         temp_stack = []
@@ -220,24 +221,24 @@ class Tree:
         if not root:
             return
         if root.is_open_tag:
-            print(f'{sep}<{root.tag_name}', end='')
+            self.outputstring += f'{sep}<{root.tag_name}'
             if root.has_attribute:
-                print(f' {root.attribute_name}={root.attribute_value}>')
+                self.outputstring += f' {root.attribute_name}={root.attribute_value}>' + "\n"
             else:
-                print('>')
+                self.outputstring += '>' + "\n"
             if root.hasValue and root.children:
                 another_sep = sep + '\t'
-                print(f'{another_sep}{root.children[0].value}')
+                self.outputstring += f'{another_sep}{root.children[0].value}' + "\n"
         elif root.is_close_tag:
-            print(f'{sep}</{root.tag_name}>')
+            self.outputstring += f'{sep}</{root.tag_name}>' + "\n"
         elif root.self_close:
-            print(f'{sep}<{root.tag_name}/>')
+            self.outputstring += f'{sep}<{root.tag_name}/>' + "\n"
         elif root.comment:
-            print(f'{sep}<!{root.value}>')
+            self.outputstring += f'{sep}<!--{root.value}-->' + "\n"
         elif root.xml_version:
-            print(f'{sep}<?{root.value}>')
+            self.outputstring += f'{sep}<?{root.value}?>' + "\n"
         elif not root.is_valid:
-            print(f'{sep}{root.value}')
+            self.outputstring += f'{sep}<{root.tag_name}>' + "\n"
         for child in root.children:
             self.__printTree(child, level + 1)
 
@@ -451,14 +452,16 @@ class Tree:
         self.update_file_state(Status.correction)  # update the file
 
     def visualizeXML(self):
+        self.outputstring = ""
         for nodes in self.created_nodes:
             self.__printTree(nodes)
+        return self.outputstring
 
     def visualizeJSON(self):
         self.outputstring=""
         for nodes in self.created_nodes:
             self.__printJSON(nodes)
-        print(self.outputstring)
+        return self.outputstring
 
     def __edit_prettifying(self, root: Node, level=0):
         sep = level * "\t"
@@ -684,4 +687,6 @@ if __name__ == '__main__':
     xmlTree = Tree()
     xmlTree.parser(test)
     xmlTree.visualizeJSON()
-    # xmlTree.update_file_state(Status.prettifying)
+    xmlTree.update_file_state(Status.minifying)
+    print(xmlTree.file_state_xml)
+    
