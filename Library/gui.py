@@ -8,7 +8,7 @@ import XMLTree
 from Compression import HuffmanCode
 
 class App:
-    def _init_(self):
+    def __init__(self):
         # setting title
         self.root = tk.Tk()
         self.root.title("xml editor")
@@ -100,6 +100,7 @@ class App:
                 output_text.insert(INSERT, "please enter a valid xml ")
 
             output_text.config(state='disabled')
+
         def minify(self):
             self.input_str=input_text.get("1.0", END)
             output_text.config(state='normal')
