@@ -24,10 +24,7 @@ class App:
         alignstr = '%dx%d+%d+%d' % (width, height, (screenwidth - width) / 2, (screenheight - height) / 2)
         self.root.geometry(alignstr)
         self.root.resizable(width=False, height=False)
-
-        xml_cover = PhotoImage(file='E:\XML_Editor\Library\photo.png')
-        #Create a label to display the image
-        label = Label(self.root, image=xml_cover)
+        label = Label(self.root,background='pink',width=1200,height=700)
         label.place(x=0, y=0)
         input_text = tk.Text(self.root)
         input_text.pack()
@@ -72,10 +69,7 @@ class App:
             if(answer):
                 output_text.insert(INSERT, "the xml is valid")
             else:
-                xmlTree =  XMLTree.Tree()
-                xmlTree.parser(self.input_str)
                 output_text.insert(INSERT, "the xml is not valid")
-                output_text.insert(INSERT, xmlTree.check_validation)
             output_text.config(state='disabled')
 
         
