@@ -6,6 +6,7 @@ import tkinter.ttk as ttk
 import check_validation
 import XMLTree
 from Compression import HuffmanCode
+import re 
 
 class App:
     def __init__(self):
@@ -69,6 +70,8 @@ class App:
             if(answer):
                 output_text.insert(INSERT, "the xml is valid")
             else:
+                xmlTree =  XMLTree.Tree()
+                xmlTree.parser(self.input_str)
                 output_text.insert(INSERT, "the xml is not valid")
             output_text.config(state='disabled')
 
@@ -102,10 +105,12 @@ class App:
             self.input_str=input_text.get("1.0", END)
             output_text.config(state='normal')
             output_text.delete("1.0", END)
-            xmlTree = XMLTree.Tree()
-            xmlTree.parser(self.input_str)
-            xmlTree.update_file_state(XMLTree.Status.minifying)
-            output_text.insert(INSERT,xmlTree.file_state_xml)
+            #xmlTree = XMLTree.Tree()
+            #xmlTree.parser(self.input_str)
+            #xmlTree.update_file_state(XMLTree.Status.minifying)
+            #output_text.insert(INSERT,xmlTree.file_state_xml)
+            output_text.insert(INSERT, re.sub(r"(>\s+<)", "><",self.input_str ))
+
             output_text.config(state='disabled')
             File_manu.entryconfig(3,state=NORMAL)
 
