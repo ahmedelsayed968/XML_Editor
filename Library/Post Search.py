@@ -15,7 +15,7 @@ def search_word(users, word):
 
 
 if __name__ == '__main__':
-    # file_string = read_file("D:\Semester 7\DSA\Project DSA\XML_Editor\sample.xml")
+    # file_string = read_file("")
     # users = DataBase.get_users_info(file_string)
     # search_result = search_word(users, "economy")
     # for post in search_result:
