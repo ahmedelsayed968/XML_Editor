@@ -25,10 +25,10 @@ class App:
         self.root.geometry(alignstr)
         self.root.resizable(width=False, height=False)
 
-        # xml_cover = PhotoImage(file='E:\XML_Editor\Library\photo.png')
+        xml_cover = PhotoImage(file='E:\XML_Editor\Library\photo.png')
         #Create a label to display the image
-        # label = Label(self.root, image=xml_cover)
-        # label.place(x=0, y=0)
+        label = Label(self.root, image=xml_cover)
+        label.place(x=0, y=0)
         input_text = tk.Text(self.root)
         input_text.pack()
         input_text["borderwidth"] = "3px"
@@ -72,7 +72,10 @@ class App:
             if(answer):
                 output_text.insert(INSERT, "the xml is valid")
             else:
+                xmlTree =  XMLTree.Tree()
+                xmlTree.parser(self.input_str)
                 output_text.insert(INSERT, "the xml is not valid")
+                output_text.insert(INSERT, xmlTree.check_validation)
             output_text.config(state='disabled')
 
         
