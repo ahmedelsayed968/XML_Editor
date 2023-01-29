@@ -249,7 +249,7 @@ class Tree:
         length = len(root.children)
         if not root:
             return
-        if (length == 0):
+        if (length == 0): 
             if (len(temp) == 1 and root.tag_name == temp[0]):
                 temp.pop()
                 self.outputstring+=sep + " ]\n"
@@ -261,14 +261,12 @@ class Tree:
                         flag_list_close = True
                 if (flag_list_close):
                     self.outputstring+=sep + " ]\n"
-                    flag_list_close = False
                 for tags in temp1:
                     if (root.tag_name == tags):
                         temp1.pop()
                         flag_set_close = True
                 if (flag_set_close):
                     self.outputstring+=sep + " }\n"
-                    flag_set_close = False
         elif (length == 1):
             if (root.children[0].value != None):
                 self.outputstring+=sep + "\"" + root.tag_name + "\":\""
@@ -276,7 +274,7 @@ class Tree:
                     self.outputstring+="{\"" + root.attribute_name + "\":" + root.attribute_value + "}\n"
                 else:
                     self.outputstring+=root.children[0].value + "\",\n"
-        elif (length > 2):
+        elif (length > 2 or level==0):
             if (level == 0):
                 self.outputstring+="{\""+ root.tag_name + "\"[\n"
                 temp.append(root.tag_name)
@@ -297,7 +295,10 @@ class Tree:
                         self.outputstring+=root.children[0].value
                         self.outputstring+="[\n"
                         temp.append(root.tag_name)
-
+        elif (length == 2):
+             if (root.is_open_tag):
+                self.outputstring+=sep+"{\""+ root.tag_name + "\"[\n"
+                temp.append(root.tag_name)  
         elif root.self_close:
             self.outputstring+=sep + "\"" + root.tag_name + "\""
         elif root.comment:
@@ -306,7 +307,6 @@ class Tree:
             pass
         for child in root.children:
             self.__printJSON(child,level + 1, temp, temp1)
-
     # need to edit
     def __correctionTree(self, root: Node, parent: Node):
         if not root.is_valid:
