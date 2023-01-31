@@ -7,6 +7,7 @@ import check_validation
 import XMLTree
 from Compression import HuffmanCode
 import re 
+from detect_error import detect_error
 
 class App:
     def __init__(self):
@@ -72,7 +73,8 @@ class App:
             else:
                 xmlTree =  XMLTree.Tree()
                 xmlTree.parser(self.input_str)
-                output_text.insert(INSERT, "the xml is not valid")
+                output_text.insert(INSERT, "the xml is not valid\n")
+                output_text.insert(INSERT, detect_error(self.input_str))
             output_text.config(state='disabled')
 
         

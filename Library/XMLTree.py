@@ -497,32 +497,31 @@ class Tree:
             self.__edit_prettifying(node)
 
     def __edit_minifying(self, root: Node):
-        new_line = ""
-        if not root:
-            return
-        if root.is_open_tag:
-            new_line += f'<{root.tag_name}'
-            if root.has_attribute:
-                new_line += f' {root.attribute_name}={root.attribute_value}>'
-            else:
-                new_line += '>'
-            if root.hasValue and root.children:
-                new_line += f'{root.children[0].value}'
-        elif root.is_close_tag:
-            new_line = f'</{root.tag_name}>'
-        elif root.self_close:
-            new_line = f'<{root.tag_name}/>'
-        elif root.comment:
-            new_line = f'<!{root.value}>'
-        elif root.xml_version:
-            new_line = f'<?{root.value}>'
-        if self.file_state_xml:
-            if len(self.file_state_xml) % 30 == 0:
-                self.file_state_xml += '\n'
-        self.file_state_xml += new_line
-        for child in root.children:
-            self.__edit_minifying(child)
-
+            new_line = ""
+            if not root:
+                return
+            if root.is_open_tag:
+                new_line += f'<{root.tag_name}'
+                if root.has_attribute:
+                    new_line += f' {root.attribute_name}={root.attribute_value}>'
+                else:
+                    new_line += '>'
+                if root.hasValue and root.children:
+                    new_line += f'{root.children[0].value}'
+            elif root.is_close_tag:
+                new_line = f'</{root.tag_name}>'
+            elif root.self_close:
+                new_line = f'<{root.tag_name}/>'
+            elif root.comment:
+                new_line = f'<!{root.value}>'
+            elif root.xml_version:
+                new_line = f'<?{root.value}>'
+            # if self.file_state_xml:
+            #     if len(self.file_state_xml) % 30 == 0:
+            #         self.file_state_xml += '\n'
+            self.file_state_xml += new_line
+            for child in root.children:
+                self.__edit_minifying(child)
     def __minifying(self):
         self.file_state_xml = ""
         for node in self.created_nodes:
@@ -687,6 +686,6 @@ if __name__ == '__main__':
     xmlTree = Tree()
     xmlTree.parser(test)
     xmlTree.visualizeJSON()
-    xmlTree.update_file_state(Status.minifying)
+    xmlTree.update_file_state(Status.correction)
     print(xmlTree.file_state_xml)
     
