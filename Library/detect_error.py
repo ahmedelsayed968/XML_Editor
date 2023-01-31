@@ -31,20 +31,23 @@ class stack:
         return remove.value
         
 def get_closed_tags(string):
+    #to extract words between </>
     pattern = r'</(.+?)>'
     match = re.findall(pattern, string)
     return match
 
 def get_words_between_angle_brackets(string):
+    #to extract words between <> and not include  comments tag or self-close tag  
     pattern = r'<([^\\?!/]+?)>'
     match = re.findall(pattern, string)
     return match
 
 
 def detect_error(xml_string):
+    # Extract all words between angle brackets in the xml string
     open_tag=get_words_between_angle_brackets(xml_string)
 
-
+    # Get all closing tags in the xml string
     close_tag=get_closed_tags(xml_string)
 
     # convert list1 and list2 to sets
@@ -56,12 +59,15 @@ def detect_error(xml_string):
 
     # convert the set back to a list
     opening_words= list(result_set)
+
     opening_words=[i for i in opening_words if not re.search(r"atrr=", i)]
     closing_words = ['/'+i for i in opening_words ]
 
+    #split data into lines
+
     Lines = xml_string.split('\n')
 
-    
+    # Initialize stacks for temporary data, open tag errors, close tag errors, and count
     count=0
 
     stack1 = stack()   #temp stack
@@ -73,36 +79,43 @@ def detect_error(xml_string):
     statement=""
             
             
-
+# Iterate through each line in the xml string
     for line in Lines:
         
         word_count=0
+        # Skip any empty or whitespace lines
         if line.isspace() or line=='' :
             count=count +1
             continue 
+        # Extract all elements between angle brackets and all other characters
         result = re.findall(r'<.*?>|[^<>]+', line)
         pastpast=pastline
         pastline=line_words
         line_words = []
         
         for val in result:
+             # Remove angle brackets from the element
                 val = val.replace("<", "").replace(">", "")
                 if("=" in val and not("?" in val)):
+                    #for open tag with attr
                     val=val.split(" ")[0][:]
                     
                 line_words.append(val)
         count=count +1
+         # Remove any whitespace elements from the line words list
         line_words=[x for x in line_words if x.strip()]
+        # Iterate through each word in the line
         for line in line_words:
             
             word_count=word_count+1
+            # if does not  have slash mean it is open tag or data
             if(not("/" in line)):
                 for opening_word in opening_words:
                     if (opening_word == line):
                         if(word_count>1):
                             
                             if(line_words[word_count-2]not in opening_words and line_words[word_count-2] not in closing_words ):
-                                
+                                #if we have data and before it a close tag that means error in open tag 
                                 if(word_count-3 >-1):
                                     if(line_words[word_count-3] in opening_words):
                                             
@@ -167,7 +180,7 @@ def detect_error(xml_string):
                     if (closing_word == line):
 
 
-                                
+                         #if it empty that means error in open tag for the recent close tag       
                         if( stack1.isEmpty() ):
                             
                             open_tag_error.push(count)
@@ -179,7 +192,8 @@ def detect_error(xml_string):
                             #print(line)
                             
                             temp='/'+stack1.peek()
-                            
+                            #if not match with the open tag in the stack we see the past open tag if match that means error close tag 
+                            # for the unmatched open tag if not that means error in both tag 
                             if (temp!=closing_word ):
 
                                 tag=stack1.pop()
@@ -220,7 +234,7 @@ def detect_error(xml_string):
             
 
         
-
+    #check if the stack empty if not this means error in clos tag 
     while stack1.getSize() !=0:    
         temp=stack1.peek()
         stack1.pop()
@@ -228,7 +242,7 @@ def detect_error(xml_string):
         stack1.pop()
         close_tag_error.push(temp)
 
-
+    # restore errors in one varible called statement
     while close_tag_error.getSize()!=0:
         statement +="missing close tag for the open tag  "+str(close_tag_error.peek())
         close_tag_error.pop()
