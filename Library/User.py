@@ -1,6 +1,3 @@
-import Post
-
-
 class User(object):
     number_of_users = 0
 
@@ -32,16 +29,16 @@ class User(object):
         return self._posts
 
     @posts.setter
-    def posts(self, posts):
-        self._posts = posts
+    def posts(self, post):
+        self._posts = post
 
     @property
     def followers(self) -> list:
         return self._followers
 
     @followers.setter
-    def followers(self, followers_id: list):
-        self._followers = followers_id
+    def followers(self, follower_id: list):
+        self._followers = follower_id
 
 
 if __name__ == '__main__':

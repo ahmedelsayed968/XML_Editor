@@ -1,5 +1,5 @@
 class Post(object):
-    def __init__(self,topics,body):
+    def __init__(self, topics, body):
         self._topics = topics
         self._body = body
 
@@ -9,7 +9,7 @@ class Post(object):
 
     @topics.setter
     def topics(self, topic: list):
-        self._topics.append(topic)
+        self._topics = topic
 
     @property
     def body(self):
