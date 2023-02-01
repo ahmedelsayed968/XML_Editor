@@ -64,7 +64,7 @@ class NetworkAnalysis:
             followers = self.graph_of_users[user_id]
         except KeyError:
             print(f"User with ID {user_id} not found in the graph")
-            return []
+            
         # Find the followers of followers of a user
         result = []
         for follower in followers:
