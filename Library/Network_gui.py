@@ -8,7 +8,8 @@ from Network_Analysis import NetworkAnalysis
 import Post
 from UserData import DataBase
 from Dictionary import Dictionary
-
+from Post_Search import SearchWord
+from Graph_Visualization import GraphVisualizer
 class App:
     def __init__(self):
         # setting title
@@ -17,6 +18,8 @@ class App:
         self.root.PATH = None
         self.input_str = None
         self.file_path = None
+        self.text_field1=None
+        self.text_field2=None
         # setting window size
         width = 1200 
         height = 700 
@@ -28,6 +31,7 @@ class App:
 
         # xml_cover = PhotoImage(file='E:\XML_Editor\Library\photo.png')
         #Create a label to display the image
+        
         label = Label(self.root,background='pink',width=1200,height=700)
         label.place(x=0, y=0)
         input_text = tk.Text(self.root)
@@ -64,6 +68,54 @@ class App:
         File_manu.add_separator()
         File_manu.add_command(label="Exit", command=lambda : self.root.quit())
     
+        def close_window(self,Window_name):
+            text1=self.text_field1.get()
+            if Window_name=="Mutual followers" :
+                text2=self.text_field2.get()
+                mutual_followers(self,text1,text2)
+            elif Window_name=="Followers of followers":
+                followers_of_followers(self,text1)
+            elif Window_name=="search by key":
+                search_word(self, text1)    
+            new_window.destroy()
+
+        def open_new_window(self,Window_name):
+    # Create a new Tkinter window
+            global new_window
+            new_window = tk.Toplevel(self.root)
+            new_window.title(Window_name)
+            new_window.geometry("400x300+{}+{}".format(self.root.winfo_x() + 100, self.root.winfo_y() + 100))
+
+    # Add a label to the window
+           # Add an "OK" button to the window
+            button = tk.Button(new_window, text="OK", command=lambda:close_window(self,Window_name))
+            if Window_name!="search by key":
+                label = tk.Label(new_window, text="ID:")
+                label.place(x=100, y=80)
+            
+            else:
+                label = tk.Label(new_window, text="word:")
+                label.place(x=100, y=80)
+                button.place(x=120, y=130)
+               
+ 
+    # Add a text field to the window
+            self.text_field1 = tk.Entry(new_window)
+            self.text_field1.place(x=120, y=100)
+
+            if(Window_name=="Mutual followers"):
+                self.text_field2 = tk.Entry(new_window)
+                self.text_field2.place(x=120, y=150)
+                button.place(x=120, y=180)
+
+            if Window_name=="followers of followers":
+                button.place(x=120, y=130)
+            
+                
+    
+
+    # Start the main event loop
+            new_window.mainloop()
         def most_influencer(self):
             self.input_str=input_text.get("1.0", END)
             output_text.config(state='normal')
@@ -83,21 +135,56 @@ class App:
             output_text.delete("1.0", END)
             network_analysis = NetworkAnalysis(self.input_str)
             id=network_analysis.most_active()
-            #output_text.insert(INSERT, "ID:"+str(network_analysis.user_id_dict[id])+"\n")
+            output_text.insert(INSERT, "Name:"+str(network_analysis.user_id_dict[id])+"\n")
             output_text.insert(INSERT, "ID:"+str(id)+"\n")
             File_manu.entryconfig(3,state=DISABLED)
             output_text.config(state='disabled')
             File_manu.entryconfig(3,state=NORMAL)
 
-        def mutual_followers(self):
-            pass
-        def followers_of_followers(self):
-            pass
-        def search_word(users, word):
-            pass
+        def  mutual_followers(self, user1, user2):
+            self.input_str=input_text.get("1.0", END)
+            output_text.config(state='normal')
+            output_text.delete("1.0", END)
+            network_analysis = NetworkAnalysis(self.input_str)
+            for id in network_analysis.mutual_followers(int(user1), int(user2)):
+                output_text.insert(INSERT, "Name:"+str(network_analysis.user_id_dict[id])+"\n")
+                output_text.insert(INSERT, "ID:"+str(id)+"\n")
+            File_manu.entryconfig(3,state=DISABLED)
+            output_text.config(state='disabled')
+            File_manu.entryconfig(3,state=NORMAL)
+        def followers_of_followers(self, user1):
+            self.input_str=input_text.get("1.0", END)
+            output_text.config(state='normal')
+            output_text.delete("1.0", END)
+            network_analysis = NetworkAnalysis(self.input_str)
+            for id in network_analysis.followers_of_followers(int(user1)):
+                output_text.insert(INSERT, "Name:"+str(network_analysis.user_id_dict[id])+"\n")
+                output_text.insert(INSERT, "ID:"+str(id)+"\n")
+            File_manu.entryconfig(3,state=DISABLED)
+            output_text.config(state='disabled')
+            File_manu.entryconfig(3,state=NORMAL)
+        def search_word(self, word):
+            self.input_str=input_text.get("1.0", END)
+            output_text.config(state='normal')
+            output_text.delete("1.0", END)
+            users = DataBase.get_users_info(self.input_str)
+            search_result = SearchWord.search_word(users, word)
+            for post in search_result:
+                output_text.insert(INSERT, post+"\n")
+            File_manu.entryconfig(3,state=DISABLED)
+            output_text.config(state='disabled')
+            File_manu.entryconfig(3,state=NORMAL)
 
         def graph_visiualization(self):
-            pass
+            self.input_str=input_text.get("1.0", END)
+            output_text.config(state='normal')
+            output_text.delete("1.0", END)
+            users = DataBase.get_users_info(self.input_str)
+            users_graph = GraphVisualizer(users)
+            users_graph.draw_graph()
+            File_manu.entryconfig(3,state=DISABLED)
+            output_text.config(state='disabled')
+            File_manu.entryconfig(3,state=NORMAL)
 
 
 
@@ -140,7 +227,7 @@ class App:
         Button2.place(x=510, y=250, width=180, height=25)
         Button2["borderwidth"] = "3px"
 
-        Button3 = tk.Button(self.root,command=lambda:mutual_followers(self))
+        Button3 = tk.Button(self.root,command=lambda:open_new_window(self,"Mutual followers"))
         Button3["bg"] = "black"
         ft = tkFont.Font(family='Times', size=14)
         Button3["text"] = "mutual followers"
@@ -151,7 +238,7 @@ class App:
         Button3["borderwidth"] = "3px"
 
 
-        Button4 = tk.Button(self.root,command=lambda:followers_of_followers(self))
+        Button4 = tk.Button(self.root,command=lambda:open_new_window(self,"Followers of followers"))
         Button4["bg"] = "black"
         ft = tkFont.Font(family='Times', size=14)
         Button4["font"] = ft
@@ -161,7 +248,7 @@ class App:
         Button4.place(x=510, y=310, width=180, height=25)
         Button4["borderwidth"] = "3px"
 
-        Button5 = tk.Button(self.root,command=lambda:search_word(self))
+        Button5 = tk.Button(self.root,command=lambda:open_new_window(self,"search by key"))
         Button5["bg"] = "black"
         ft = tkFont.Font(family='Times', size=14)
         Button5["font"] = ft
