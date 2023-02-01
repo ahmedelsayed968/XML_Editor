@@ -5,9 +5,10 @@ from Handling_files import read_file
 class NetworkAnalysis:
     def __init__(self, file_string):
         # Initialize the graph of users using data from the database
-        users = DataBase.get_users_info(file_string)
+        self.users = DataBase.get_users_info(file_string)
+        self.user_id_dict = {user.id: user.name for user in self.users}
         self.graph_of_users = {}
-        for user in users:
+        for user in self.users:
             self.graph_of_users[user.id] = user.followers
         
         #to test only
@@ -80,10 +81,12 @@ if __name__ == '__main__':
     # file_string = read_file(r"path")
     # network_analysis = NetworkAnalysis(file_string)
     # network_analysis.print_graph_of_users()
+    # user_id_dict = network_analysis.user_id_dict
+    # print(" User ID and Name mapping:")
+    # print(user_id_dict)
 
-    # print(f" Most Influencer users are: {network_analysis.most_influencer()}")
-    # print(f" Most Active user is : {network_analysis.most_active()}")
-    # print(f" Mutual followers between {3} and {4} are : {network_analysis.mutual_followers(3, 4)}")
-    # print(f" Suggested users for user {7} : {network_analysis.followers_of_followers(7)}")
-    
+    # print(f" Most Influencer users are: {[user_id_dict[user_id] for user_id in network_analysis.most_influencer()]}")
+    # print(f" Most Active user is : {user_id_dict[network_analysis.most_active()]}")
+    # print(f" Mutual followers between {3} and {4} are : {[user_id_dict[user_id] for user_id in network_analysis.mutual_followers(3, 4)]}")
+    # print(f" Suggested users for user {6} : {[user_id_dict[user_id] for user_id in network_analysis.followers_of_followers(6)]}")
     pass
