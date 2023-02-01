@@ -7,9 +7,7 @@ class NetworkAnalysis:
         # Initialize the graph of users using data from the database
         self.users = DataBase.get_users_info(file_string)
         self.user_id_dict = {user.id: user.name for user in self.users}
-        self.graph_of_users = {}
-        for user in self.users:
-            self.graph_of_users[user.id] = user.followers
+        self.graph_of_users = {user.id: user.followers for user in self.users}
         
         #to test only
         #self.graph_of_users={1: [1,6], 2: [2, 3,6], 3: [1,6],4:[1,2,3,5,6],5:[6],6:[]}
