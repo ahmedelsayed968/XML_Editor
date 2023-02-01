@@ -14,8 +14,9 @@ class DataBase:
         input: take file as list of tokens
         return : list of users
         """
+
         if not DataBase.file_string:
-            self.file_string = ''.join(list_tokens)  # to join list of tokens to string_file
+            self.file_string = ''.join(list_tokens.split())  # to join list of tokens to string_file
 
         names = self.__get_names(self)  # return list of mentioned names in the file
         ids = self.__get_ids(self)  # return all ids mentioned
