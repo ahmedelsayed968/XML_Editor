@@ -44,6 +44,8 @@ class DataBase:
 
     def __initialize_list_of_user(self, names, ids):
         list_of_users = []
+        print(ids)
+        print(names)
         for i in range(len(names)):
             list_of_users.append(User(str(names[i])))
 
