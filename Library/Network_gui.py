@@ -76,6 +76,19 @@ class App:
             output_text.config(state='disabled')
             File_manu.entryconfig(3,state=NORMAL)
 
+        def followers_of_followers_ok(self,window,Entry1):
+            self.input_str= Entry1.get("1.0", END)
+            output_text.config(state='normal')
+            output_text.delete("1.0", END)
+            result = NetworkAnalysis.followers_of_followers(self.input_str)
+            for follower in result:
+                output_text.insert(INSERT, follower)
+            #window.destroy()
+            File_manu.entryconfig(3,state=DISABLED)
+            output_text.config(state='disabled')
+            File_manu.entryconfig(3,state=NORMAL)
+            
+
         
         def most_active(self):
             self.input_str=input_text.get("1.0", END)
@@ -92,7 +105,30 @@ class App:
         def mutual_followers(self):
             pass
         def followers_of_followers(self):
-            pass
+            window = Tk()
+            # set window title
+            window.title("followers_of_followers")
+            # set window width and height
+            window.configure(width=500, height=500)
+            label = Label(window,background='pink',width=500,height=500)
+            label.place(x=0, y=0)
+            window.grid_columnconfigure((0,1), weight=1)
+            Label2 = Label(window, text="Enter the ID:")
+            Entry1 = Entry(window)
+            Button1 = tk.Button(self.root,command=lambda:followers_of_followers_ok(self,window,Entry1))
+            Button1["bg"] = "black"
+            ft = tkFont.Font(family='Times', size=14)
+            Button1["font"] = ft
+            Button1["fg"] = "white"
+            Button1["text"] = "ok"
+            Button1["borderwidth"] = "3px"
+            Label2.grid(row=0, column=0)
+            Entry1.grid(row=0, column=1)
+            Button1.grid(row=0, column=2)
+
+            # set window background color
+            window.configure(bg='lightgray')
+            window.mainloop()
         def search_word(users, word):
             pass
 
