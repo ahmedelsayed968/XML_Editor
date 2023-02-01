@@ -38,7 +38,7 @@ class DataBase:
         return names
 
     def __get_ids(self):
-        ids = re.findall("<id>(.*?)</id>", DataBase.file_string, re.DOTALL)
+        ids = re.findall("<user><id>(.*?)</id>", DataBase.file_string, re.DOTALL)
         return ids
 
     def __initialize_list_of_user(self, names, ids):
