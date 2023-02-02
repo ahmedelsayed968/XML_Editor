@@ -73,7 +73,7 @@ class App:
             if Window_name=="Mutual followers" :
                 text2=self.text_field2.get()
                 mutual_followers(self,text1,text2)
-            elif Window_name=="Followers of followers":
+            elif Window_name=="Friends Suggestions":
                 followers_of_followers(self,text1)
             elif Window_name=="search by key":
                 search_word(self, text1)    
@@ -109,7 +109,7 @@ class App:
                 self.text_field2 = tk.Entry(new_window)
                 self.text_field2.place(x=120, y=150)
                 button.place(x=120, y=180)
-            if Window_name=="Followers of followers":
+            if Window_name=="Friends Suggestions":
                 button.place(x=120, y=130)
     # Start the main event loop
             new_window.mainloop()
@@ -227,14 +227,14 @@ class App:
         Button2["font"] = ft
         Button2["fg"] = "white"
         Button2["justify"] = "center"
-        Button2["text"] = "most active"
+        Button2["text"] = "Most active"
         Button2.place(x=510, y=250, width=180, height=25)
         Button2["borderwidth"] = "3px"
 
         Button3 = tk.Button(self.root,command=lambda:open_new_window(self,"Mutual followers"))
         Button3["bg"] = "black"
         ft = tkFont.Font(family='Times', size=14)
-        Button3["text"] = "mutual followers"
+        Button3["text"] = "Mutual followers"
         Button3["font"] = ft
         Button3["fg"] = "white"
         Button3["justify"] = "center"
@@ -242,13 +242,13 @@ class App:
         Button3["borderwidth"] = "3px"
 
 
-        Button4 = tk.Button(self.root,command=lambda:open_new_window(self,"Followers of followers"))
+        Button4 = tk.Button(self.root,command=lambda:open_new_window(self,"Friends Suggestions"))
         Button4["bg"] = "black"
         ft = tkFont.Font(family='Times', size=14)
         Button4["font"] = ft
         Button4["fg"] = "white"
         Button4["justify"] = "center"
-        Button4["text"] = "followers of followers"
+        Button4["text"] = "Friends Suggestions"
         Button4.place(x=510, y=310, width=180, height=25)
         Button4["borderwidth"] = "3px"
 
@@ -258,7 +258,7 @@ class App:
         Button5["font"] = ft
         Button5["fg"] = "white"
         Button5["justify"] = "center"
-        Button5["text"] = "search word"
+        Button5["text"] = "Search by word"
         Button5.place(x=510, y=340, width=180, height=25)
         Button5["borderwidth"] = "3px"
 
@@ -269,7 +269,7 @@ class App:
         Button6["font"] = ft
         Button6["fg"] = "white"
         Button6["justify"] = "center"
-        Button6["text"] = "graph visiualization"
+        Button6["text"] = "Graph Visiualization"
         Button6.place(x=510, y=370, width=180, height=25)
         Button6["borderwidth"] = "3px"
        

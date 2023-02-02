@@ -18,8 +18,8 @@ class App:
         self.input_str = None
 
         # setting window size
-        width = 1200 #400
-        height = 700 #100
+        width = 1200
+        height = 700 
 
         screenwidth = self.root.winfo_screenwidth()
         screenheight = self.root.winfo_screenheight()

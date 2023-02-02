@@ -63,7 +63,8 @@ class NetworkAnalysis:
             #catch an exception is user index not in the graph
             followers = self.graph_of_users[user_id]
         except KeyError:
-            print(f"User with ID {user_id} not found in the graph")
+            # print(f"User with ID {user_id} not found in the graph")
+            pass
             
         # Find the followers of followers of a user
         result = []
@@ -75,7 +76,7 @@ class NetworkAnalysis:
         return result
     
     
-if __name__ == '__main__':
+# if __name__ == '__main__':
     # file_string = read_file(r"path")
     # network_analysis = NetworkAnalysis(file_string)
     # network_analysis.print_graph_of_users()
@@ -87,4 +88,4 @@ if __name__ == '__main__':
     # print(f" Most Active user is : {user_id_dict[network_analysis.most_active()]}")
     # print(f" Mutual followers between {3} and {4} are : {[user_id_dict[user_id] for user_id in network_analysis.mutual_followers(3, 4)]}")
     # print(f" Suggested users for user {6} : {[user_id_dict[user_id] for user_id in network_analysis.followers_of_followers(6)]}")
-    pass
+    # pass
