@@ -1,28 +1,42 @@
 import re
 
 class Node:
+    """Node for linked list implementation of stack"""
     def __init__(self, value):
+        """
+        Initialize the node with value
+
+        Parameters:
+        value (Any): The value to be stored in the node
+        """
         self.value = value
         self.next = None
 
 class stack:
+    # mplementation of a stack data structure using linked list
     def __init__(self):
+        # Initialize the stack
         self.head = Node("head")
         self.size = 0
     def getSize(self):
+        # Returns the size of the stack
         return self.size
     def isEmpty(self):
+        # Checks if the stack is empty
         return bool(self.size == 0)
     def peek(self):
+        # Returns the top element of the stack without removing it
         if self.isEmpty():
             raise Exception("Peeking from an empty stack")
         return self.head.next.value
     def push(self, value):
+        # Pushes an element onto the top of the stack
         node = Node(value)
         node.next = self.head.next
         self.head.next = node
         self.size += 1
     def pop(self):
+        # Pops the top element off the stack
         if self.isEmpty():
             raise Exception("Popping from an empty stack")
         remove = self.head.next
@@ -257,86 +271,86 @@ def detect_error(xml_string):
         open_tag_error.pop()
     return statement
 
-if __name__ == "__main__":
-    xml_string="""<users>
+# if __name__ == "__main__":
+#     xml_string="""<users>
     
-        1</id>
-        Ahmed Ali</name>
-        <posts>
-            <post>
-                <body>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+#         1</id>
+#         Ahmed Ali</name>
+#         <posts>
+#             <post>
+#                 <body>
+#                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
                 
                 
                     
-                        economy
-                    </topic>
-                    <topic>
-                        finance
-                    </topic>
-                </topics>
-            </post>
-            <post>
-                <body>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                </body>
-                <topics>
-                    <topic>
-                        solar_energy
-                    </topic>
-                </topics>
-            </post>
-        </posts>
-        <followers>
-            <follower>
-                <id>2</id>
+#                         economy
+#                     </topic>
+#                     <topic>
+#                         finance
+#                     </topic>
+#                 </topics>
+#             </post>
+#             <post>
+#                 <body>
+#                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+#                 </body>
+#                 <topics>
+#                     <topic>
+#                         solar_energy
+#                     </topic>
+#                 </topics>
+#             </post>
+#         </posts>
+#         <followers>
+#             <follower>
+#                 <id>2</id>
             
-            <follower>
-                <id>3</id>
-            </follower>
-        </followers>
-    </user>
-    <user>
-        <id>2</id>
-        <name>Yasser Ahmed
-        <posts>
-            <post>
-                <body>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                </body>
-                <topics>
-                    <topic>
-                        education
-                    </topic>
+#             <follower>
+#                 <id>3</id>
+#             </follower>
+#         </followers>
+#     </user>
+#     <user>
+#         <id>2</id>
+#         <name>Yasser Ahmed
+#         <posts>
+#             <post>
+#                 <body>
+#                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+#                 </body>
+#                 <topics>
+#                     <topic>
+#                         education
+#                     </topic>
                
-            </post>
-        </posts>
-        <followers>
-            <follower>
-                <id>1</id>
-            </follower>
-        </followers>
-    </user>
-    <user>
-        3</id>
-        Mohamed Sherif</name>
-        <posts>
-            <post>
-                <body>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                </body>
-                <topics>
-                    <topic>
-                        sports
-                    </topic>
-                </topics>
-            </post>
-        </posts>
-        <followers>
-            <follower>
-                <id>1</id>
-            </follower>
-        </followers>
-    </user>
-</users>"""
-   # print(detect_error(xml_string))
+#             </post>
+#         </posts>
+#         <followers>
+#             <follower>
+#                 <id>1</id>
+#             </follower>
+#         </followers>
+#     </user>
+#     <user>
+#         3</id>
+#         Mohamed Sherif</name>
+#         <posts>
+#             <post>
+#                 <body>
+#                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+#                 </body>
+#                 <topics>
+#                     <topic>
+#                         sports
+#                     </topic>
+#                 </topics>
+#             </post>
+#         </posts>
+#         <followers>
+#             <follower>
+#                 <id>1</id>
+#             </follower>
+#         </followers>
+#     </user>
+# </users>"""
+#     print(detect_error(xml_string))

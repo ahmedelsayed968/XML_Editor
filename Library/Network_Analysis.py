@@ -3,8 +3,22 @@ from Handling_files import read_file
 
 
 class NetworkAnalysis:
+    """
+    A class that provides methods to analyze a network of users and their followers.
+
+    Attributes:
+        users (list): A list of User objects, where each User object contains the id and name of a user.
+        user_id_dict (dict): A dictionary that maps the id of a user to their name.
+        graph_of_users (dict): A dictionary that represents the graph of users and their followers,
+                                where each key is a user's id and each value is a list of their followers' ids.
+    """
     def __init__(self, file_string):
-        # Initialize the graph of users using data from the database
+        """
+        Initialize the graph of users using data from the database.
+
+        Parameters:
+            file_string (str): A string that represents the path to the database file.
+        """
         self.users = DataBase.get_users_info(file_string)
         self.user_id_dict = {user.id: user.name for user in self.users}
         self.graph_of_users = {user.id: user.followers for user in self.users}
