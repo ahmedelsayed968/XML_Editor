@@ -209,31 +209,32 @@ def detect_error(xml_string):
                             #if not match with the open tag in the stack we see the past open tag if match that means error close tag 
                             # for the unmatched open tag if not that means error in both tag 
                             if (temp!=closing_word ):
-
-                                tag=stack1.pop()
-                                count_tag=stack1.pop()
-                                if(not stack1.isEmpty()):
+                                flag=False
+                                temp_stack=stack()
+                                while(not flag):
+                                    if(stack1.isEmpty()):
+                                        break
                                     if(stack1.peek()==closing_word[1:]):
-                                        
-                                        
-                                        close_tag_error.push(count_tag)
-                                        close_tag_error.push(tag)
                                         stack1.pop()
                                         stack1.pop()
+                                        flag=True
+                                        break
                                     else:
-                                    
-                                        open_tag_error.push(count)
-                                        open_tag_error.push(closing_word[1:])
-                                        stack1.push(count_tag)
-                                        stack1.push(tag)
+                                        temp_stack.push(stack1.pop())
+                                        temp_stack.push(stack1.pop())
 
-                                elif(stack1.isEmpty()):
+                                if(flag):
+                                    while(not temp_stack.isEmpty()):
+                                        close_tag_error.push(temp_stack.pop())
+                                        close_tag_error.push(temp_stack.pop())
+
+                                else:
+                                    while(not temp_stack.isEmpty()):
+                                        stack1.push(temp_stack.pop())
+                                        stack1.push(temp_stack.pop())
                                     open_tag_error.push(count)
                                     open_tag_error.push(closing_word[1:])
-                                    close_tag_error.push(count_tag)
-                                    close_tag_error.push(tag)
-
-                                    
+         
                                 break
                                         
         
@@ -270,6 +271,7 @@ def detect_error(xml_string):
         statement+=" which in line "+str(open_tag_error.peek())+"\n"
         open_tag_error.pop()
     return statement
+
 
 # if __name__ == "__main__":
 #     xml_string="""<users>
