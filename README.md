@@ -85,8 +85,18 @@ Huffman coding is a **data compression technique** that is used to represent the
 * it represents how users are connected to each other in a visual graph
 
 ### ![visualization](https://gcdnb.pbrd.co/images/ahsJ4OiseLOo.jpg?o=1)
+#### Note
+1. Ahmed points to Yasser (Ahmed --> Yasser)
+ means that Ahmed **follows** Yasser
+2. Reversing arrow's direction can be easily done by changing this line of code 
+
+   'nx.draw_networkx_edges(G, pos, edge_color='gray', alpha=1, **arrowstyle='<|-'**, arrowsize=15, connectionstyle='arc3,rad=0.07')'
+   
+   **to** 
+   
+   'nx.draw_networkx_edges(G, pos, edge_color='gray', alpha=1, **arrowstyle='-|>'**, arrowsize=15, connectionstyle='arc3,rad=0.07')'
 ### 10. How to open exe file 
-*from exe_file folder open dist folder and then press on exe file 
+* from exe_file folder open dist folder and then press on exe file 
  
 
 ---
